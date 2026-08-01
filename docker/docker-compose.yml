@@ -1,0 +1,35 @@
+# smiu-ai-assistant - production stack
+# Placeholder skeleton. Extend as each service's Dockerfile is finalized.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smiu_assistant}
+      POSTGRES_USER: ${POSTGRES_USER:-smiu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smiu}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  # backend:
+  #   build: ../backend
+  #   env_file: ../.env
+  #   depends_on:
+  #     - db
+
+  # ai:
+  #   build: ../ai
+  #   env_file: ../.env
+  #   depends_on:
+  #     - db
+
+  # frontend:
+  #   build: ../frontend
+  #   env_file: ../.env
+
+volumes:
+  postgres_data:

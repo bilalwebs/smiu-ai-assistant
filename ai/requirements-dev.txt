@@ -1,0 +1,8 @@
+# AI service development / test dependencies (placeholder list)
+#
+# -r requirements.txt
+#
+# pytest
+# pytest-asyncio
+# ruff
+# mypy

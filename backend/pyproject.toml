@@ -1,0 +1,32 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "FastAPI REST API for the SMIU AI Assistant platform"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = ["alembic"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "ASYNC", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/api/**/*.py" = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+packages = ["app"]
+exclude = ["alembic"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

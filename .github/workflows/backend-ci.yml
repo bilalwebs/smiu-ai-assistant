@@ -1,0 +1,17 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Placeholder pipeline for the FastAPI backend.
+# Add steps: install deps, ruff check, mypy, pytest.
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Placeholder
+        run: echo "Backend CI - configure lint, type-check and tests"

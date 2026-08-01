@@ -1,0 +1,16 @@
+# Backend runtime dependencies (pinned to the tested set).
+# Python 3.12+ (verified on 3.13).
+
+# --- Core API ---
+fastapi==0.115.14
+uvicorn[standard]==0.34.2
+
+# --- Validation & configuration ---
+pydantic==2.11.4
+pydantic-settings==2.9.1
+
+# --- Database (setup only in this phase) ---
+sqlalchemy==2.0.41
+alembic==1.15.2
+psycopg[binary]==3.2.9
+aiosqlite==0.21.0

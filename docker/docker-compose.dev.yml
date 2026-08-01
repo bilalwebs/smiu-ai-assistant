@@ -1,0 +1,8 @@
+# smiu-ai-assistant - local development overrides
+# Usage:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up db
+
+services:
+  db:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"

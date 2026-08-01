@@ -1,0 +1,10 @@
+# AI service dependencies (placeholder list, pin versions when implementing)
+#
+# langchain
+# langchain-openai
+# langgraph
+# langchain-postgres
+# langchainhub
+#
+# pydantic
+# python-dotenv

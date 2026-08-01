@@ -1,0 +1,11 @@
+# Backend development / test dependencies (pinned to the tested set).
+-r requirements.txt
+
+# --- Testing ---
+pytest==8.4.1
+pytest-asyncio==1.0.0
+httpx==0.28.1
+
+# --- Lint / format / type-check ---
+ruff==0.12.4
+mypy==1.16.1

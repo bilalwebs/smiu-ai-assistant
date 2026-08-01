@@ -1,0 +1,8 @@
+[project]
+name = "ai"
+version = "0.1.0"
+description = "LangChain / LangGraph agent service for the SMU AI Assistant platform"
+requires-python = ">=3.11"
+
+# [tool.ruff]
+# Placeholder - lint configuration (target-version, line-length, select)
