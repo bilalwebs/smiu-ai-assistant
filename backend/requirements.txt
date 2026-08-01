@@ -12,5 +12,6 @@ pydantic-settings==2.9.1
 # --- Database (setup only in this phase) ---
 sqlalchemy==2.0.41
 alembic==1.15.2
+asyncpg==0.31.0
 psycopg[binary]==3.2.9
 aiosqlite==0.21.0

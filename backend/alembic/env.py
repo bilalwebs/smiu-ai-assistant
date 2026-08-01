@@ -15,11 +15,15 @@ from sqlalchemy.pool import NullPool
 
 from app.config.settings import get_settings
 from app.database.base import Base
+from app.database.session import normalize_database_url
 
 config = context.config
 
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option(
+    "sqlalchemy.url",
+    normalize_database_url(settings.database_url),
+)
 
 target_metadata = Base.metadata
 

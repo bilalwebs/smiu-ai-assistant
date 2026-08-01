@@ -35,15 +35,51 @@ _DEFAULT_HEADERS: tuple[tuple[bytes, bytes], ...] = (
     (b"content-security-policy", b"default-src 'none'; frame-ancestors 'none'"),
 )
 
+# Swagger UI / ReDoc need inline init scripts and styles, plus same-origin
+# fetches for the OpenAPI spec and the self-hosted static assets. This CSP is
+# applied only on the docs/static paths; the strict ``default-src 'none'`` CSP
+# above stays in force for every API response.
+_DOCS_CSP = (
+    b"default-src 'self'; "
+    b"script-src 'self' 'unsafe-inline'; "
+    b"style-src 'self' 'unsafe-inline'; "
+    b"img-src 'self' data:; "
+    b"font-src 'self' data:; "
+    b"connect-src 'self'; "
+    b"object-src 'none'; "
+    b"base-uri 'self'; "
+    b"form-action 'self'; "
+    b"frame-ancestors 'none'"
+)
+
+_DOCS_HEADERS: tuple[tuple[bytes, bytes], ...] = (
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"DENY"),
+    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+    (b"content-security-policy", _DOCS_CSP),
+)
+
 _HSTS_HEADER = (b"strict-transport-security", b"max-age=31536000; includeSubDomains")
 
 
 class SecurityHeadersMiddleware:
     """Append baseline security headers to every HTTP response."""
 
-    def __init__(self, app: _ASGIApp, *, enable_hsts: bool = False) -> None:
+    def __init__(
+        self,
+        app: _ASGIApp,
+        *,
+        enable_hsts: bool = False,
+        relaxed_paths: tuple[str, ...] = ("/docs", "/redoc", "/static/"),
+    ) -> None:
         self.app = app
         self.enable_hsts = enable_hsts
+        self.relaxed_paths = relaxed_paths
+
+    def _headers_for(self, path: str) -> tuple[tuple[bytes, bytes], ...]:
+        if any(path.startswith(prefix) for prefix in self.relaxed_paths):
+            return _DOCS_HEADERS
+        return _DEFAULT_HEADERS
 
     async def __call__(
         self,
@@ -55,11 +91,13 @@ class SecurityHeadersMiddleware:
             await self.app(scope, receive, send)
             return
 
+        headers = self._headers_for(scope.get("path", "/"))
+
         async def send_wrapper(
             message: MutableMapping[str, Any],
         ) -> None:
             if message["type"] == "http.response.start":
-                message.setdefault("headers", []).extend(_DEFAULT_HEADERS)
+                message.setdefault("headers", []).extend(headers)
                 if self.enable_hsts:
                     message.setdefault("headers", []).append(_HSTS_HEADER)
             await send(message)

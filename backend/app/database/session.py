@@ -39,12 +39,35 @@ def _is_sqlite(database_url: str) -> bool:
     return make_url(database_url).get_backend_name() == "sqlite"
 
 
+def normalize_database_url(database_url: str) -> str:
+    """Return a URL the async engine can drive.
+
+    PostgreSQL is accessed through the async ``asyncpg`` driver, so sync
+    ``postgresql://`` / ``postgresql+psycopg://`` URLs (e.g. the copy-paste
+    URLs from Neon) are rewritten to ``postgresql+asyncpg://`` and libpq-only
+    query parameters (``sslmode``, ``channel_binding``) are translated to
+    their asyncpg equivalents (``ssl``).
+    """
+    url = make_url(database_url)
+    if url.get_backend_name() != "postgresql" or url.drivername == "postgresql+asyncpg":
+        return database_url
+    query = dict(url.query)
+    sslmode = query.pop("sslmode", None)
+    query.pop("channel_binding", None)
+    if sslmode is not None and sslmode != "disable" and "ssl" not in query:
+        query["ssl"] = sslmode
+    return url.set(drivername="postgresql+asyncpg", query=query).render_as_string(
+        hide_password=False
+    )
+
+
 def get_engine(settings: Settings | None = None) -> AsyncEngine:
     """Return the async engine for the active settings, creating it on first use."""
     active = settings or get_settings()
-    engine = _engines.get(active.database_url)
+    database_url = normalize_database_url(active.database_url)
+    engine = _engines.get(database_url)
     if engine is None:
-        if _is_sqlite(active.database_url):
+        if _is_sqlite(database_url):
             kwargs: dict[str, object] = {
                 "poolclass": StaticPool,
                 "connect_args": {"check_same_thread": False},
@@ -56,8 +79,8 @@ def get_engine(settings: Settings | None = None) -> AsyncEngine:
                 "pool_timeout": active.db_pool_timeout,
                 "pool_recycle": active.db_pool_recycle,
             }
-        engine = create_async_engine(active.database_url, **kwargs)
-        _engines[active.database_url] = engine
+        engine = create_async_engine(database_url, **kwargs)
+        _engines[database_url] = engine
     return engine
 
 
@@ -66,7 +89,8 @@ def get_session_factory(
 ) -> async_sessionmaker[AsyncSession]:
     """Return a cached async session factory bound to the active engine."""
     active = settings or get_settings()
-    factory = _sessionmakers.get(active.database_url)
+    database_url = normalize_database_url(active.database_url)
+    factory = _sessionmakers.get(database_url)
     if factory is None:
         factory = async_sessionmaker(
             bind=get_engine(active),
@@ -74,7 +98,7 @@ def get_session_factory(
             expire_on_commit=False,
             autoflush=False,
         )
-        _sessionmakers[active.database_url] = factory
+        _sessionmakers[database_url] = factory
     return factory
 
 

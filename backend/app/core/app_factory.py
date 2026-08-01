@@ -24,7 +24,10 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api import router as api_base_router
 from app.api.v1.endpoints.health import orchestration_router
@@ -39,6 +42,8 @@ from app.middleware.request_id import RequestIDMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
 
 logger = logging.getLogger(__name__)
+
+_STATIC_DIR = Path(__file__).resolve().parents[2] / "static"
 
 
 def _ensure_sqlite_directory(settings: Settings) -> None:
@@ -82,12 +87,57 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title=active_settings.app_name,
         version=active_settings.version,
         description="SMIU AI Assistant backend API",
-        docs_url=active_settings.docs_url,
-        redoc_url=active_settings.redoc_url,
+        docs_url=None,
+        redoc_url=None,
         openapi_url=active_settings.openapi_url,
         lifespan=_lifespan,
     )
     app.state.settings = active_settings
+
+    # Self-hosted docs UI: Swagger UI / ReDoc assets are vendored under
+    # ``static/docs`` and served from this backend, so the UI works without
+    # CDN access and the strict API CSP never needs to allow third parties.
+    if (active_settings.docs_url or active_settings.redoc_url) and _STATIC_DIR.is_dir():
+        app.mount(
+            "/static",
+            StaticFiles(directory=_STATIC_DIR),
+            name="static",
+        )
+
+    async def _swagger_ui_html(request: Request) -> HTMLResponse:
+        root_path = request.scope.get("root_path", "").rstrip("/")
+        openapi_url = root_path + str(active_settings.openapi_url or "/openapi.json")
+        return get_swagger_ui_html(
+            openapi_url=openapi_url,
+            title=f"{active_settings.app_name} - Swagger UI",
+            swagger_js_url="/static/docs/swagger-ui-bundle.js",
+            swagger_css_url="/static/docs/swagger-ui.css",
+            swagger_favicon_url="/static/docs/favicon-32x32.png",
+        )
+
+    async def _redoc_html(request: Request) -> HTMLResponse:
+        root_path = request.scope.get("root_path", "").rstrip("/")
+        openapi_url = root_path + str(active_settings.openapi_url or "/openapi.json")
+        return get_redoc_html(
+            openapi_url=openapi_url,
+            title=f"{active_settings.app_name} - ReDoc",
+            redoc_js_url="/static/docs/redoc.standalone.js",
+            redoc_favicon_url="/static/docs/favicon-32x32.png",
+            with_google_fonts=False,
+        )
+
+    if active_settings.docs_url:
+        app.add_api_route(
+            active_settings.docs_url,
+            _swagger_ui_html,
+            include_in_schema=False,
+        )
+    if active_settings.redoc_url:
+        app.add_api_route(
+            active_settings.redoc_url,
+            _redoc_html,
+            include_in_schema=False,
+        )
 
     # Innermost first; Starlette applies middleware in reverse registration
     # order, so the last added wrapper is the outermost.
@@ -100,6 +150,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(
         SecurityHeadersMiddleware,
         enable_hsts=active_settings.environment is Environment.PRODUCTION,
+        relaxed_paths=(
+            active_settings.docs_url or "/docs",
+            active_settings.redoc_url or "/redoc",
+            "/static/",
+        ),
     )
     register_cors(app, active_settings)
 
