@@ -18,16 +18,15 @@ Usage:
 
 from __future__ import annotations
 
-import logging
 import sys
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import Settings
+from app.database.health import check_database_health
 from app.dependencies.database import get_db_session
 from app.dependencies.settings import get_settings
 from app.schemas.health import (
@@ -40,8 +39,6 @@ from app.schemas.health import (
 )
 from app.schemas.response import SuccessResponse
 from app.utils.response import success_response
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["health"])
 
@@ -68,12 +65,14 @@ async def liveness(
 
 
 async def _check_db(session: AsyncSession) -> ComponentCheck:
-    try:
-        await session.execute(text("SELECT 1"))
-    except Exception as exc:
-        logger.warning("Readiness database check failed", exc_info=exc)
-        return ComponentCheck(name="database", status=CheckStatus.DOWN, message=_DB_NOT_READY_MSG)
-    return ComponentCheck(name="database", status=CheckStatus.UP, message=_DB_REACHABLE_MSG)
+    health = await check_database_health(session)
+    if health.is_up:
+        return ComponentCheck(
+            name="database", status=CheckStatus.UP, message=_DB_REACHABLE_MSG
+        )
+    return ComponentCheck(
+        name="database", status=CheckStatus.DOWN, message=_DB_NOT_READY_MSG
+    )
 
 
 @router.get(

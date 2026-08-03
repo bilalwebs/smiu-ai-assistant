@@ -16,6 +16,7 @@ from sqlalchemy.pool import NullPool
 from app.config.settings import get_settings
 from app.database.base import Base
 from app.database.session import normalize_database_url
+from app.database.utils import is_sqlite
 
 config = context.config
 
@@ -27,6 +28,10 @@ config.set_main_option(
 
 target_metadata = Base.metadata
 
+# SQLite has no native ALTER support; batch mode is required for additive
+# migrations in development (DATABASE_DESIGN.md §28 environment parity).
+_USE_BATCH_MODE = is_sqlite(config.get_main_option("sqlalchemy.url"))
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode (emit SQL to stdout)."""
@@ -36,6 +41,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        render_as_batch=_USE_BATCH_MODE,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -43,7 +49,11 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     """Run migrations against a live synchronous connection."""
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_as_batch=_USE_BATCH_MODE,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
