@@ -59,10 +59,32 @@ def _async_url(db_path: Path) -> str:
     return f"sqlite+aiosqlite:///{db_path.as_posix()}"
 
 
+_BASELINE_REVISION = "1a2b3c4d5e6f"
+
+_CORE_TABLES = {
+    "users",
+    "students",
+    "departments",
+    "ai_conversations",
+    "chat_history",
+    "requests",
+    "request_timeline",
+    "notifications",
+    "documents",
+    "knowledge_documents",
+    "knowledge_chunks",
+    "ai_sources",
+    "feedback",
+    "audit_logs",
+    "agent_logs",
+    "sessions",
+}
+
+
 def test_baseline_upgrade_creates_only_version_table(database_url_env: None) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = Path(tmpdir) / "baseline.db"
-        command.upgrade(_make_config(_async_url(db_path)), "head")
+        command.upgrade(_make_config(_async_url(db_path)), _BASELINE_REVISION)
         assert _tables(_sync_url(db_path)) == {"alembic_version"}
 
 
@@ -70,7 +92,7 @@ def test_baseline_downgrade_is_reversible(database_url_env: None) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = Path(tmpdir) / "baseline.db"
         config = _make_config(_async_url(db_path))
-        command.upgrade(config, "head")
+        command.upgrade(config, _BASELINE_REVISION)
         command.downgrade(config, "base")
 
         engine = create_engine(_sync_url(db_path))
@@ -79,5 +101,23 @@ def test_baseline_downgrade_is_reversible(database_url_env: None) -> None:
         engine.dispose()
         assert version_count == 0
 
+        command.upgrade(config, _BASELINE_REVISION)
+        assert _tables(_sync_url(db_path)) == {"alembic_version"}
+
+
+def test_full_schema_upgrade_creates_all_tables(database_url_env: None) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        db_path = Path(tmpdir) / "full.db"
+        command.upgrade(_make_config(_async_url(db_path)), "head")
+        assert _tables(_sync_url(db_path)) >= _CORE_TABLES
+
+
+def test_full_schema_downgrade_is_reversible(database_url_env: None) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        db_path = Path(tmpdir) / "full.db"
+        config = _make_config(_async_url(db_path))
         command.upgrade(config, "head")
+        assert _tables(_sync_url(db_path)) >= _CORE_TABLES
+
+        command.downgrade(config, _BASELINE_REVISION)
         assert _tables(_sync_url(db_path)) == {"alembic_version"}
