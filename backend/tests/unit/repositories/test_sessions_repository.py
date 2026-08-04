@@ -29,6 +29,43 @@ async def test_revoke_session_sets_revoked_at(db_session, session_factory) -> No
     assert revoked.revoked_at is not None
 
 
+async def test_touch_session_updates_last_used(db_session, session_factory) -> None:
+    session = await session_factory()
+    repo = SessionRepository(db_session)
+    touched = await repo.touch_session(session)
+    assert touched.last_used_at is not None
+
+
+async def test_revoke_sessions_counts_and_skips_revoked(
+    db_session, session_factory
+) -> None:
+    repo = SessionRepository(db_session)
+    first = await session_factory()
+    second = await session_factory()
+    await repo.revoke_session(second)
+    count = await repo.revoke_sessions([first, second])
+    assert count == 1
+    assert first.revoked_at is not None
+    assert second.revoked_at is not None
+
+
+async def test_get_chain_returns_connected_component(
+    db_session, session_factory, user_factory
+) -> None:
+    user = await user_factory()
+    repo = SessionRepository(db_session)
+    first = await session_factory(user_id=user.id)
+    second = await session_factory(user_id=user.id, replaced_by_session_id=first.id)
+    third = await session_factory(user_id=user.id, replaced_by_session_id=second.id)
+    unlinked = await session_factory(user_id=user.id)
+    other_user = await user_factory()
+    await session_factory(user_id=other_user.id)
+
+    chain = await repo.get_chain(third)
+    assert {row.id for row in chain} == {first.id, second.id, third.id}
+    assert unlinked.id not in {row.id for row in chain}
+
+
 async def test_get_active_sessions_filters_and_orders(
     db_session, session_factory, user_factory
 ) -> None:

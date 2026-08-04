@@ -39,6 +39,9 @@ _S = TypeVar("_S", bound=Select[Any])
 
 _SQLITE_TS_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+#: Maximum allowed page size to prevent unbounded query resource usage.
+MAX_PAGE_LIMIT = 100
+
 class SoftDeletable(Protocol):
     """Runtime-shape of :class:`app.models.mixins.SoftDeleteMixin`."""
 
@@ -278,8 +281,8 @@ class BaseRepository[T: Base]:
         options: Sequence[ExecutableOption] = (),
     ) -> Page[T]:
         """Offset-based page per API_SPECIFICATION.md §9 (public contract)."""
-        page = page if page >= 1 else 1
-        limit = limit if limit >= 1 else 1
+        page = max(1, page)
+        limit = max(1, min(limit, MAX_PAGE_LIMIT))
         total = await self.count(*filters)
         total_pages = ceil(total / limit) if total else 0
         offset = (page - 1) * limit
@@ -307,7 +310,7 @@ class BaseRepository[T: Base]:
         descending: bool = True,
     ) -> KeysetPage[T]:
         """Keyset page on ``(created_at, id)`` for large collections (§31)."""
-        limit = limit if limit >= 1 else 1
+        limit = max(1, min(limit, MAX_PAGE_LIMIT))
         created_at = self._column("created_at")
         id_col = self._column("id")
         stmt = self._select(filters=filters, options=options)

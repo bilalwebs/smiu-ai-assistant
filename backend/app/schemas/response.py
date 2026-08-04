@@ -67,7 +67,7 @@ class ErrorDetail(BaseModel):
 class ErrorBody(BaseModel):
     """Error body: stable code, human-readable message, optional detail list."""
 
-    code: str = Field(pattern=r"^[A-Z]{3}[0-9]{3}$")
+    code: str = Field(pattern=r"^[A-Z]{2,4}[0-9]{3}$")
     message: str
     details: list[ErrorDetail] | None = None
 

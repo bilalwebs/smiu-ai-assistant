@@ -113,3 +113,22 @@ class ServiceUnavailableError(AppError):
         details: list[dict[str, str]] | None = None,
     ) -> None:
         super().__init__(code=code, message=message, status_code=503, details=details)
+
+
+class RateLimitError(AppError):
+    """Too many requests — rate limit exceeded (HTTP 429)."""
+
+    def __init__(
+        self,
+        *,
+        retry_after: int = 60,
+        message: str = "Too many requests. Please try again later.",
+        details: list[dict[str, str]] | None = None,
+    ) -> None:
+        super().__init__(
+            code="SYS002",
+            message=message,
+            status_code=429,
+            details=details,
+        )
+        self.retry_after = retry_after

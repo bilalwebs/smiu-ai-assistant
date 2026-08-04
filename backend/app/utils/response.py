@@ -22,6 +22,7 @@ from typing import Any
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
+from app.repositories.base import Page
 from app.schemas.response import (
     ErrorBody,
     ErrorResponse,
@@ -31,6 +32,19 @@ from app.schemas.response import (
 )
 from app.utils.request_id import get_request_id
 from app.utils.time import utc_now
+
+
+def pagination_meta(page: Page[Any]) -> PaginationMeta:
+    """Build ``meta.pagination`` from a repository page result (API_SPECIFICATION.md §9)."""
+    return PaginationMeta(
+        page=page.page,
+        limit=page.limit,
+        offset=page.offset,
+        total=page.total,
+        total_pages=page.total_pages,
+        next_page=page.next_page,
+        prev_page=page.prev_page,
+    )
 
 
 def build_meta(

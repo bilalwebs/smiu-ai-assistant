@@ -57,6 +57,12 @@ class User(BaseModel, Base):
     locked_until: Mapped[datetime | None] = mapped_column(
         sa.DateTime(timezone=True), nullable=True
     )
+    password_reset_token_hash: Mapped[str | None] = mapped_column(
+        sa.String(64), nullable=True
+    )
+    password_reset_token_expires_at: Mapped[datetime | None] = mapped_column(
+        sa.DateTime(timezone=True), nullable=True
+    )
     preferences: Mapped[dict[str, Any] | None] = mapped_column(
         JsonB, nullable=True, server_default=sa.text("'{}'")
     )

@@ -33,6 +33,11 @@ _DEFAULT_HEADERS: tuple[tuple[bytes, bytes], ...] = (
     (b"x-frame-options", b"DENY"),
     (b"referrer-policy", b"strict-origin-when-cross-origin"),
     (b"content-security-policy", b"default-src 'none'; frame-ancestors 'none'"),
+    (
+        b"permissions-policy",
+        b"accelerometer=(), camera=(), geolocation=(), gyroscope=(), "
+        b"magnetometer=(), microphone=(), payment=(), usb=()",
+    ),
 )
 
 # Swagger UI / ReDoc need inline init scripts and styles, plus same-origin
@@ -92,6 +97,7 @@ class SecurityHeadersMiddleware:
             return
 
         headers = self._headers_for(scope.get("path", "/"))
+        is_auth_path = scope.get("path", "").startswith("/api/v1/auth")
 
         async def send_wrapper(
             message: MutableMapping[str, Any],
@@ -100,6 +106,11 @@ class SecurityHeadersMiddleware:
                 message.setdefault("headers", []).extend(headers)
                 if self.enable_hsts:
                     message.setdefault("headers", []).append(_HSTS_HEADER)
+                if is_auth_path:
+                    message.setdefault("headers", []).extend([
+                        (b"cache-control", b"no-store, no-cache, must-revalidate"),
+                        (b"pragma", b"no-cache"),
+                    ])
             await send(message)
 
         await self.app(scope, receive, send_wrapper)

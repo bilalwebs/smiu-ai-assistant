@@ -1,16 +1,5 @@
 <div align="center">
 
-# Agentic AI-Based University Workflow Automation System
-
-**Multi-Agent Student Support Platform — Final Year Project**
-
-Developed for **Sindh Madressatul Islam University (SMIU)**
-Department of Computer Science
-
-![Build](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Python](https://img.shields.io/badge/python-3.13%2B-3776AB) ![Node](https://img.shields.io/badge/node-20%2B-339933) ![FastAPI](https://img.shields.io/badge/FastAPI-009688) ![Next.js](https://img.shields.io/badge/Next.js-15-000000) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1) ![AI Powered](https://img.shields.io/badge/AI-Powered-FF6F00)
-
-</div>
-
 ---
 
 ## 1. Project Overview
@@ -41,14 +30,14 @@ The project was motivated by the gap between a chatbot (which only answers quest
 
 ### Why Agentic AI?
 
-| Capability | Chatbot | Agentic AI (this project) |
-| ---------- | ------- | ------------------------- |
-| Answers questions | ✅ | ✅ |
-| Detects intent and routes | ❌ | ✅ (Coordinator Agent) |
-| Resolves workflows end to end | ❌ | ✅ (tracked requests) |
-| Grounded in university knowledge | Partial | ✅ (RAG over FAISS) |
-| Memory across turns | Limited | ✅ (persisted conversations) |
-| Safe, auditable behavior | Limited | ✅ (guardrails + audit logs) |
+| Capability                       | Chatbot | Agentic AI (this project)    |
+| -------------------------------- | ------- | ---------------------------- |
+| Answers questions                | ✅      | ✅                           |
+| Detects intent and routes        | ❌      | ✅ (Coordinator Agent)       |
+| Resolves workflows end to end    | ❌      | ✅ (tracked requests)        |
+| Grounded in university knowledge | Partial | ✅ (RAG over FAISS)          |
+| Memory across turns              | Limited | ✅ (persisted conversations) |
+| Safe, auditable behavior         | Limited | ✅ (guardrails + audit logs) |
 
 Agentic AI was selected because it transforms the system from a **passive answerer** into an **active workflow executor** — the core research contribution of the project.
 
@@ -154,14 +143,14 @@ LLM (Gemini 2.5 Flash)
 Grounded Response + Citations
 ```
 
-| Layer | Responsibility |
-| ----- | -------------- |
-| **Frontend** | Next.js 15 app (React 19, TypeScript, Tailwind CSS, shadcn/ui) serving the landing page, auth, dashboard, and chat interface. |
-| **Backend** | FastAPI REST API (`/api/v1`) with layered architecture: routers → services → repositories → database. |
-| **Database** | PostgreSQL (SQLite for local development) persisting all 16 tables. |
-| **AI Layer** | LangGraph workflow (Coordinator + specialists) and LangChain RAG orchestration. |
-| **Knowledge Base** | Versioned university documents in `knowledge/`; embedded into a FAISS vector store. |
-| **Authentication** | JWT access + refresh tokens with server-side sessions and RBAC. |
+| Layer                    | Responsibility                                                                                                                |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**       | Next.js 15 app (React 19, TypeScript, Tailwind CSS, shadcn/ui) serving the landing page, auth, dashboard, and chat interface. |
+| **Backend**        | FastAPI REST API (`/api/v1`) with layered architecture: routers → services → repositories → database.                    |
+| **Database**       | PostgreSQL (SQLite for local development) persisting all 16 tables.                                                           |
+| **AI Layer**       | LangGraph workflow (Coordinator + specialists) and LangChain RAG orchestration.                                               |
+| **Knowledge Base** | Versioned university documents in`knowledge/`; embedded into a FAISS vector store.                                          |
+| **Authentication** | JWT access + refresh tokens with server-side sessions and RBAC.                                                               |
 
 ---
 
@@ -169,75 +158,75 @@ Grounded Response + Citations
 
 ### Frontend
 
-| Technology | Purpose |
-| ---------- | ------- |
-| Next.js 15 | App Router, server-side rendering, React framework |
-| React 19 | UI component model |
-| TypeScript | Strictly typed frontend and shared logic |
-| Tailwind CSS | Styling and design tokens |
-| shadcn/ui | Radix-based component foundation |
+| Technology   | Purpose                                            |
+| ------------ | -------------------------------------------------- |
+| Next.js 15   | App Router, server-side rendering, React framework |
+| React 19     | UI component model                                 |
+| TypeScript   | Strictly typed frontend and shared logic           |
+| Tailwind CSS | Styling and design tokens                          |
+| shadcn/ui    | Radix-based component foundation                   |
 
 ### Backend
 
-| Technology | Purpose |
-| ---------- | ------- |
-| FastAPI | REST API and server-side logic |
-| Python 3.13+ | Backend language |
-| SQLAlchemy 2.0 | ORM and data access |
-| Alembic | Database migrations |
-| Pydantic v2 | Request/response validation |
+| Technology     | Purpose                        |
+| -------------- | ------------------------------ |
+| FastAPI        | REST API and server-side logic |
+| Python 3.13+   | Backend language               |
+| SQLAlchemy 2.0 | ORM and data access            |
+| Alembic        | Database migrations            |
+| Pydantic v2    | Request/response validation    |
 
 ### Database
 
-| Technology | Purpose |
-| ---------- | -------- |
-| PostgreSQL | Production database |
-| SQLite | Local development database |
+| Technology | Purpose                    |
+| ---------- | -------------------------- |
+| PostgreSQL | Production database        |
+| SQLite     | Local development database |
 
 ### AI
 
-| Technology | Purpose |
-| ---------- | -------- |
-| LangGraph | Agent state machine and workflow engine |
-| LangChain | Chains, tools, retrieval, LLM orchestration |
-| Google Gemini 2.5 Flash | Primary LLM |
-| FAISS | Vector store for retrieval |
-| Sentence Transformers | Embedding model for query + corpus |
+| Technology              | Purpose                                     |
+| ----------------------- | ------------------------------------------- |
+| LangGraph               | Agent state machine and workflow engine     |
+| LangChain               | Chains, tools, retrieval, LLM orchestration |
+| Google Gemini 2.5 Flash | Primary LLM                                 |
+| FAISS                   | Vector store for retrieval                  |
+| Sentence Transformers   | Embedding model for query + corpus          |
 
 ### Authentication
 
-| Technology | Purpose |
-| ---------- | -------- |
-| JWT | Signed access + refresh tokens |
-| bcrypt/argon2 | Password hashing |
-| RBAC | Role-based authorization |
+| Technology    | Purpose                        |
+| ------------- | ------------------------------ |
+| JWT           | Signed access + refresh tokens |
+| bcrypt/argon2 | Password hashing               |
+| RBAC          | Role-based authorization       |
 
 ### Development Tools
 
-| Technology | Purpose |
-| ---------- | -------- |
+| Technology              | Purpose                            |
+| ----------------------- | ---------------------------------- |
 | Docker / Docker Compose | Containerization and orchestration |
-| Git / GitHub | Version control and collaboration |
-| GitHub Actions | CI pipelines (placeholders) |
-| Ruff / linters | Python linting |
-| ESLint / Prettier | TypeScript linting and formatting |
+| Git / GitHub            | Version control and collaboration  |
+| GitHub Actions          | CI pipelines (placeholders)        |
+| Ruff / linters          | Python linting                     |
+| ESLint / Prettier       | TypeScript linting and formatting  |
 
 ### Testing
 
-| Technology | Purpose |
-| ---------- | -------- |
-| Pytest | Backend and AI test framework |
-| Playwright | End-to-end UI tests |
-| Postman / OpenAPI | API contract validation |
-| Load tools | Performance and load testing |
+| Technology        | Purpose                       |
+| ----------------- | ----------------------------- |
+| Pytest            | Backend and AI test framework |
+| Playwright        | End-to-end UI tests           |
+| Postman / OpenAPI | API contract validation       |
+| Load tools        | Performance and load testing  |
 
 ### Deployment
 
-| Technology | Purpose |
-| ---------- | -------- |
-| Docker | Containerized services |
+| Technology     | Purpose                            |
+| -------------- | ---------------------------------- |
+| Docker         | Containerized services             |
 | Docker Compose | Local and production orchestration |
-| Nginx | Reverse proxy, TLS, static assets |
+| Nginx          | Reverse proxy, TLS, static assets  |
 
 ---
 
@@ -314,14 +303,14 @@ smiu-ai-assistant/
 
 ## 6. Prerequisites
 
-| Tool | Version | Notes |
-| ---- | ------- | ----- |
-| Node.js | 20+ | Required for the Next.js frontend |
-| Python | 3.13+ | Required for backend and AI services |
-| PostgreSQL | 16+ | Production database (SQLite used for local dev) |
-| Git | Latest | Version control |
-| Docker | Latest | Optional — for containerized environments |
-| Docker Compose | Latest | Optional — for orchestrated stacks |
+| Tool           | Version | Notes                                           |
+| -------------- | ------- | ----------------------------------------------- |
+| Node.js        | 20+     | Required for the Next.js frontend               |
+| Python         | 3.13+   | Required for backend and AI services            |
+| PostgreSQL     | 16+     | Production database (SQLite used for local dev) |
+| Git            | Latest  | Version control                                 |
+| Docker         | Latest  | Optional — for containerized environments      |
+| Docker Compose | Latest  | Optional — for orchestrated stacks             |
 
 Additionally:
 
@@ -411,60 +400,60 @@ The frontend is available at `http://localhost:3000` and the API docs at `http:/
 
 ### Frontend
 
-| Variable | Purpose |
-| -------- | ------- |
+| Variable                | Purpose                                      |
+| ----------------------- | -------------------------------------------- |
 | `NEXT_PUBLIC_API_URL` | Backend API base URL for the frontend client |
-| `FRONTEND_PORT` | Local frontend server port |
+| `FRONTEND_PORT`       | Local frontend server port                   |
 
 ### Backend
 
-| Variable | Purpose |
-| -------- | ------- |
-| `BACKEND_PORT` | Backend server port |
-| `DATABASE_URL` | Database connection string (SQLite in dev, PostgreSQL in prod) |
-| `ENVIRONMENT` | Active environment scope (`development` / `testing` / `production`) |
-| `SECRET_KEY` | App-level secret for encryption and signing |
+| Variable         | Purpose                                                                   |
+| ---------------- | ------------------------------------------------------------------------- |
+| `BACKEND_PORT` | Backend server port                                                       |
+| `DATABASE_URL` | Database connection string (SQLite in dev, PostgreSQL in prod)            |
+| `ENVIRONMENT`  | Active environment scope (`development` / `testing` / `production`) |
+| `SECRET_KEY`   | App-level secret for encryption and signing                               |
 
 ### Database
 
-| Variable | Purpose |
-| -------- | ------- |
-| `POSTGRES_DB` | PostgreSQL database name |
-| `POSTGRES_USER` | PostgreSQL user |
+| Variable              | Purpose                      |
+| --------------------- | ---------------------------- |
+| `POSTGRES_DB`       | PostgreSQL database name     |
+| `POSTGRES_USER`     | PostgreSQL user              |
 | `POSTGRES_PASSWORD` | PostgreSQL password (secret) |
-| `POSTGRES_PORT` | PostgreSQL port |
+| `POSTGRES_PORT`     | PostgreSQL port              |
 
 ### JWT
 
-| Variable | Purpose |
-| -------- | ------- |
-| `JWT_SECRET` | Secret for signing and verifying JWT tokens |
-| `JWT_ALGORITHM` | JWT signing algorithm (e.g., `HS256`) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime |
+| Variable                        | Purpose                                     |
+| ------------------------------- | ------------------------------------------- |
+| `JWT_SECRET`                  | Secret for signing and verifying JWT tokens |
+| `JWT_ALGORITHM`               | JWT signing algorithm (e.g.,`HS256`)      |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime                       |
 
 ### Gemini API
 
-| Variable | Purpose |
-| -------- | ------- |
-| `GEMINI_API_KEY` | LLM API key for Gemini 2.5 Flash (secret) |
-| `LANGCHAIN_API_KEY` | LangSmith / LangChain tracing key (optional) |
-| `LANGCHAIN_TRACING_V2` | Enables LangChain tracing |
-| `LANGCHAIN_PROJECT` | LangSmith project name |
+| Variable                 | Purpose                                      |
+| ------------------------ | -------------------------------------------- |
+| `GEMINI_API_KEY`       | LLM API key for Gemini 2.5 Flash (secret)    |
+| `LANGCHAIN_API_KEY`    | LangSmith / LangChain tracing key (optional) |
+| `LANGCHAIN_TRACING_V2` | Enables LangChain tracing                    |
+| `LANGCHAIN_PROJECT`    | LangSmith project name                       |
 
 ### FAISS
 
-| Variable | Purpose |
-| -------- | ------- |
-| `FAISS_PATH` | File path to the FAISS vector index |
-| `RAG_TOP_K` | Number of chunks retrieved per query (default 4) |
+| Variable       | Purpose                                          |
+| -------------- | ------------------------------------------------ |
+| `FAISS_PATH` | File path to the FAISS vector index              |
+| `RAG_TOP_K`  | Number of chunks retrieved per query (default 4) |
 
 ### Application Settings
 
-| Variable | Purpose |
-| -------- | ------- |
-| `AI_PORT` | AI service port |
-| `CHAT_HISTORY_LIMIT` | Conversation memory window in turns (default 20) |
-| `NEXT_PUBLIC_AI_API_URL` | AI service base URL for the frontend |
+| Variable                   | Purpose                                          |
+| -------------------------- | ------------------------------------------------ |
+| `AI_PORT`                | AI service port                                  |
+| `CHAT_HISTORY_LIMIT`     | Conversation memory window in turns (default 20) |
+| `NEXT_PUBLIC_AI_API_URL` | AI service base URL for the frontend             |
 
 ---
 
@@ -547,16 +536,16 @@ Each step is logged with a correlation ID and auditable — every answer is grou
 
 ## 11. AI Workflow
 
-| Stage | Description |
-| ----- | ----------- |
-| **Coordinator** | Entry node of the LangGraph state machine; detects the user's intent and routes to the correct specialist (AI_ARCHITECTURE.md §9). |
-| **Routing** | The router selects Admission, Examination, or FAQ based on the intent signal; low-confidence intents trigger a clarifying question (AI_ARCHITECTURE.md §9.5). |
-| **RAG** | Retrieval-Augmented Generation grounds every answer in the indexed knowledge base — retrieval always precedes generation (PROJECT_RULES.md AI Behaviour Rules). |
-| **Retrieval** | The query is embedded with the same Sentence Transformer; FAISS returns the top-K relevant chunks scoped by category (AI_ARCHITECTURE.md §16). |
-| **Generation** | Gemini 2.5 Flash produces a grounded, formatted answer within the context budget (AI_ARCHITECTURE.md §18). |
-| **Memory** | Short-term memory keeps the recent window (default 20 turns); optional long-term summaries reconstruct context on resume (AI_ARCHITECTURE.md §21). |
-| **Conversation** | Messages persist in `chat_history`; conversations have a full lifecycle (create → active → archived → restore/delete). |
-| **Feedback** | Students rate responses; feedback feeds the evaluation loop and drives prompt/knowledge improvements (AI_ARCHITECTURE.md §29, §38). |
+| Stage                  | Description                                                                                                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Coordinator**  | Entry node of the LangGraph state machine; detects the user's intent and routes to the correct specialist (AI_ARCHITECTURE.md §9).                              |
+| **Routing**      | The router selects Admission, Examination, or FAQ based on the intent signal; low-confidence intents trigger a clarifying question (AI_ARCHITECTURE.md §9.5).   |
+| **RAG**          | Retrieval-Augmented Generation grounds every answer in the indexed knowledge base — retrieval always precedes generation (PROJECT_RULES.md AI Behaviour Rules). |
+| **Retrieval**    | The query is embedded with the same Sentence Transformer; FAISS returns the top-K relevant chunks scoped by category (AI_ARCHITECTURE.md §16).                  |
+| **Generation**   | Gemini 2.5 Flash produces a grounded, formatted answer within the context budget (AI_ARCHITECTURE.md §18).                                                      |
+| **Memory**       | Short-term memory keeps the recent window (default 20 turns); optional long-term summaries reconstruct context on resume (AI_ARCHITECTURE.md §21).              |
+| **Conversation** | Messages persist in`chat_history`; conversations have a full lifecycle (create → active → archived → restore/delete).                                       |
+| **Feedback**     | Students rate responses; feedback feeds the evaluation loop and drives prompt/knowledge improvements (AI_ARCHITECTURE.md §29, §38).                            |
 
 ---
 
@@ -564,24 +553,24 @@ Each step is logged with a correlation ID and auditable — every answer is grou
 
 The schema (16 tables) is defined in **DATABASE_DESIGN.md** and managed with **SQLAlchemy 2.0 + Alembic**.
 
-| Table | Purpose |
-| ----- | ------- |
-| `users` | Application accounts (students, admins) |
-| `students` | Student profile and university information (1:1 with users) |
-| `departments` | University departments and agent mapping |
-| `ai_conversations` | AI chat sessions and lifecycle state |
-| `chat_history` | Messages within conversations |
-| `requests` | Core workflow requests (admission/examination/etc.) |
-| `request_timeline` | Append-only status history for each request |
-| `notifications` | User-facing activity feed and toasts |
-| `documents` | Uploaded files with checksums |
-| `knowledge_documents` | Knowledge base document metadata and versions |
-| `knowledge_chunks` | Chunked text with source metadata for retrieval |
-| `ai_sources` | Citations attached to AI messages |
-| `feedback` | User ratings, comments, and flags |
-| `audit_logs` | Append-only security and audit events |
-| `agent_logs` | AI routing, retrieval, and execution logs |
-| `sessions` | Auth sessions and token records |
+| Table                   | Purpose                                                     |
+| ----------------------- | ----------------------------------------------------------- |
+| `users`               | Application accounts (students, admins)                     |
+| `students`            | Student profile and university information (1:1 with users) |
+| `departments`         | University departments and agent mapping                    |
+| `ai_conversations`    | AI chat sessions and lifecycle state                        |
+| `chat_history`        | Messages within conversations                               |
+| `requests`            | Core workflow requests (admission/examination/etc.)         |
+| `request_timeline`    | Append-only status history for each request                 |
+| `notifications`       | User-facing activity feed and toasts                        |
+| `documents`           | Uploaded files with checksums                               |
+| `knowledge_documents` | Knowledge base document metadata and versions               |
+| `knowledge_chunks`    | Chunked text with source metadata for retrieval             |
+| `ai_sources`          | Citations attached to AI messages                           |
+| `feedback`            | User ratings, comments, and flags                           |
+| `audit_logs`          | Append-only security and audit events                       |
+| `agent_logs`          | AI routing, retrieval, and execution logs                   |
+| `sessions`            | Auth sessions and token records                             |
 
 ---
 
@@ -589,16 +578,16 @@ The schema (16 tables) is defined in **DATABASE_DESIGN.md** and managed with **S
 
 The REST API is organized under `/api/v1` and fully specified in **API_SPECIFICATION.md**. It follows REST conventions with uniform JSON envelopes and consistent error shapes.
 
-| Area | Endpoints | Auth |
-| ---- | --------- | ---- |
-| **Authentication** | Register, login, refresh, logout, password reset, email verification | Public / token |
-| **Students** | Profile, settings, owner-scoped account management | JWT (student) |
-| **Requests** | Create, list, retrieve, track workflow requests | JWT (owner) |
-| **Chat** | Send message, list conversations, resume, delete | JWT (owner) |
-| **AI** | Chat completions, feedback, citation sources | JWT |
-| **Notifications** | List, read, mark-as-read | JWT (owner) |
-| **Knowledge Base** | Read-side access to indexed documents | JWT / public |
-| **Admin (future)** | Student/department/request administration | Admin role (future) |
+| Area                     | Endpoints                                                            | Auth                |
+| ------------------------ | -------------------------------------------------------------------- | ------------------- |
+| **Authentication** | Register, login, refresh, logout, password reset, email verification | Public / token      |
+| **Students**       | Profile, settings, owner-scoped account management                   | JWT (student)       |
+| **Requests**       | Create, list, retrieve, track workflow requests                      | JWT (owner)         |
+| **Chat**           | Send message, list conversations, resume, delete                     | JWT (owner)         |
+| **AI**             | Chat completions, feedback, citation sources                         | JWT                 |
+| **Notifications**  | List, read, mark-as-read                                             | JWT (owner)         |
+| **Knowledge Base** | Read-side access to indexed documents                                | JWT / public        |
+| **Admin (future)** | Student/department/request administration                            | Admin role (future) |
 
 Every endpoint documents its request/response schema, status codes, and error envelope (API_SPECIFICATION.md §30).
 
@@ -606,17 +595,17 @@ Every endpoint documents its request/response schema, status codes, and error en
 
 ## 14. Security Features
 
-| Feature | Implementation |
-| ------- | -------------- |
-| **JWT** | Short-lived signed access tokens + server-side refresh sessions |
-| **Role-Based Access** | Server-enforced RBAC; owner-scoped data access |
-| **Password Hashing** | Strong salted hashing (bcrypt/argon2 family) — never plaintext |
-| **Input Validation** | Pydantic v2 at every boundary (client + server) |
+| Feature                               | Implementation                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------- |
+| **JWT**                         | Short-lived signed access tokens + server-side refresh sessions                 |
+| **Role-Based Access**           | Server-enforced RBAC; owner-scoped data access                                  |
+| **Password Hashing**            | Strong salted hashing (bcrypt/argon2 family) — never plaintext                 |
+| **Input Validation**            | Pydantic v2 at every boundary (client + server)                                 |
 | **Prompt Injection Protection** | Input treated as data; guardrails on input and output (AI_ARCHITECTURE.md §26) |
-| **Rate Limiting** | Login and API rate limits (API_SPECIFICATION.md §13) |
-| **Secure File Upload** | Type/size/checksum validation; UUID-based safe filenames |
-| **PII Protection** | Redacted logs; owner-scoped data; consent-respecting retention |
-| **HTTPS** | TLS enforced at the reverse proxy in production (DEPLOYMENT.md §15) |
+| **Rate Limiting**               | Login and API rate limits (API_SPECIFICATION.md §13)                           |
+| **Secure File Upload**          | Type/size/checksum validation; UUID-based safe filenames                        |
+| **PII Protection**              | Redacted logs; owner-scoped data; consent-respecting retention                  |
+| **HTTPS**                       | TLS enforced at the reverse proxy in production (DEPLOYMENT.md §15)            |
 
 ---
 
@@ -624,15 +613,15 @@ Every endpoint documents its request/response schema, status codes, and error en
 
 The complete strategy is defined in **TESTING_STRATEGY.md** — the single source of truth for all testing decisions.
 
-| Level | Scope |
-| ----- | ----- |
-| **Unit Testing** | Isolated services, repositories, components, and prompt modules |
-| **Integration Testing** | Services + repositories + database; routes + services |
-| **API Testing** | Contracts, status codes, error envelopes, pagination/filter/sort |
-| **AI Testing** | Routing, grounding, citations, hallucination prevention, evaluation metrics |
-| **UI Testing** | Components, forms, accessibility, responsive, UI states |
-| **Performance Testing** | Latency budgets, load, stress, scalability |
-| **Security Testing** | Auth, RBAC, injection, XSS, CSRF, prompt injection, PII |
+| Level                         | Scope                                                                       |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| **Unit Testing**        | Isolated services, repositories, components, and prompt modules             |
+| **Integration Testing** | Services + repositories + database; routes + services                       |
+| **API Testing**         | Contracts, status codes, error envelopes, pagination/filter/sort            |
+| **AI Testing**          | Routing, grounding, citations, hallucination prevention, evaluation metrics |
+| **UI Testing**          | Components, forms, accessibility, responsive, UI states                     |
+| **Performance Testing** | Latency budgets, load, stress, scalability                                  |
+| **Security Testing**    | Auth, RBAC, injection, XSS, CSRF, prompt injection, PII                     |
 
 Quality gates (TESTING_STRATEGY.md §31) block releases until all suites pass.
 
@@ -642,13 +631,13 @@ Quality gates (TESTING_STRATEGY.md §31) block releases until all suites pass.
 
 The complete deployment and operational strategy is defined in **DEPLOYMENT.md** — the single source of truth for deployment decisions.
 
-| Area | Strategy |
-| ---- | -------- |
-| **Frontend Deployment** | Containerized Next.js production build behind the reverse proxy |
-| **Backend Deployment** | Stateless FastAPI container(s) + background worker |
-| **Database Deployment** | PostgreSQL with persistent storage, least-privilege roles |
-| **Environment Variables** | Injected per environment from the secret store; never committed |
-| **Production Checklist** | Operational + production readiness checklists (DEPLOYMENT.md §32–33) |
+| Area                            | Strategy                                                               |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| **Frontend Deployment**   | Containerized Next.js production build behind the reverse proxy        |
+| **Backend Deployment**    | Stateless FastAPI container(s) + background worker                     |
+| **Database Deployment**   | PostgreSQL with persistent storage, least-privilege roles              |
+| **Environment Variables** | Injected per environment from the secret store; never committed        |
+| **Production Checklist**  | Operational + production readiness checklists (DEPLOYMENT.md §32–33) |
 
 Deployment follows the controlled workflow: build → validate → deploy → health check → monitor → rollback (DEPLOYMENT.md §28).
 
@@ -658,30 +647,30 @@ Deployment follows the controlled workflow: build → validate → deploy → he
 
 Performance budgets are defined in **API_SPECIFICATION.md §36** and **AI_ARCHITECTURE.md §31**.
 
-| Area | Target / Strategy |
-| ---- | ----------------- |
+| Area                             | Target / Strategy                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
 | **Expected response time** | Read/write/health endpoints sub-second at p95; AI bounded by model latency with optimized TTFT |
-| **Caching** | Caching headers for public/static data; short TTLs |
-| **Connection pooling** | Sized async DB pools; no per-request connect overhead |
-| **Optimized queries** | Indexed hot paths; keyset pagination; efficient counts |
-| **RAG optimization** | Metadata filtering, top-K tuning, in-memory FAISS index |
-| **Streaming responses** | Token-by-token streaming with TTFT optimization (future SSE) |
+| **Caching**                | Caching headers for public/static data; short TTLs                                             |
+| **Connection pooling**     | Sized async DB pools; no per-request connect overhead                                          |
+| **Optimized queries**      | Indexed hot paths; keyset pagination; efficient counts                                         |
+| **RAG optimization**       | Metadata filtering, top-K tuning, in-memory FAISS index                                        |
+| **Streaming responses**    | Token-by-token streaming with TTFT optimization (future SSE)                                   |
 
 ---
 
 ## 18. Future Improvements
 
-| Capability | Status |
-| ---------- | ------ |
-| Admin Panel | Future phase |
+| Capability                                                                             | Status        |
+| -------------------------------------------------------------------------------------- | ------------- |
+| Admin Panel                                                                            | Future phase  |
 | Additional AI Agents (Finance, Registration, Scholarship, Library, Hostel, IT Support) | Future phases |
-| Voice Assistant | Future |
-| OCR for document intake | Future |
-| Email Integration | Future |
-| Analytics & usage dashboards | Future |
-| Multi-language Support | Future |
-| Mobile Application | Future |
-| Live Notifications (WebSockets) | Future |
+| Voice Assistant                                                                        | Future        |
+| OCR for document intake                                                                | Future        |
+| Email Integration                                                                      | Future        |
+| Analytics & usage dashboards                                                           | Future        |
+| Multi-language Support                                                                 | Future        |
+| Mobile Application                                                                     | Future        |
+| Live Notifications (WebSockets)                                                        | Future        |
 
 See **DEVELOPMENT_WORKFLOW.md §36** and **PROJECT_RULES.md Future Scope** for the full roadmap.
 
@@ -691,19 +680,19 @@ See **DEVELOPMENT_WORKFLOW.md §36** and **PROJECT_RULES.md Future Scope** for t
 
 All documentation lives in the repository and is the permanent reference for development.
 
-| Document | Description |
-| -------- | ----------- |
-| `PROJECT_RULES.md` | Master development guide — project rules, tech stack, standards, Definition of Done |
-| `docs/architecture/ui-ux-design.md` | UI/UX architecture — the only design source for the frontend |
-| `docs/architecture/BACKEND_ARCHITECTURE.md` | Backend architecture — layers, services, auth, security, testing |
-| `docs/architecture/DATABASE_DESIGN.md` | Database design — 16 tables, transactions, retention, backups |
-| `docs/architecture/AI_ARCHITECTURE.md` | AI architecture — agents, LangGraph, RAG, guardrails, evaluation |
-| `docs/architecture/API_SPECIFICATION.md` | API specification — every endpoint, contract, and error code |
-| `docs/architecture/TESTING_STRATEGY.md` | Testing strategy — levels, coverage, quality gates |
-| `docs/architecture/DEVELOPMENT_WORKFLOW.md` | Development workflow — lifecycle, Git, coding standards, releases |
-| `docs/architecture/DEPLOYMENT.md` | Deployment — infrastructure, security, monitoring, backup, recovery |
-| `docs/architecture/IMPLEMENTATION_PLAN.md` | Official implementation roadmap for the project |
-| `README.md` | This document — repository overview and quick start |
+| Document                                      | Description                                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `PROJECT_RULES.md`                          | Master development guide — project rules, tech stack, standards, Definition of Done |
+| `docs/architecture/ui-ux-design.md`         | UI/UX architecture — the only design source for the frontend                        |
+| `docs/architecture/BACKEND_ARCHITECTURE.md` | Backend architecture — layers, services, auth, security, testing                    |
+| `docs/architecture/DATABASE_DESIGN.md`      | Database design — 16 tables, transactions, retention, backups                       |
+| `docs/architecture/AI_ARCHITECTURE.md`      | AI architecture — agents, LangGraph, RAG, guardrails, evaluation                    |
+| `docs/architecture/API_SPECIFICATION.md`    | API specification — every endpoint, contract, and error code                        |
+| `docs/architecture/TESTING_STRATEGY.md`     | Testing strategy — levels, coverage, quality gates                                  |
+| `docs/architecture/DEVELOPMENT_WORKFLOW.md` | Development workflow — lifecycle, Git, coding standards, releases                   |
+| `docs/architecture/DEPLOYMENT.md`           | Deployment — infrastructure, security, monitoring, backup, recovery                 |
+| `docs/architecture/IMPLEMENTATION_PLAN.md`  | Official implementation roadmap for the project                                      |
+| `README.md`                                 | This document — repository overview and quick start                                 |
 
 ---
 
@@ -711,14 +700,14 @@ All documentation lives in the repository and is the permanent reference for dev
 
 ### Branch Naming
 
-| Branch | Convention |
-| ------ | ---------- |
-| `main` | Production-ready, always deployable |
-| `develop` | Integration branch for completed features |
-| `feature/*` | One branch per feature |
-| `bugfix/*` | Non-urgent defect fixes |
-| `hotfix/*` | Urgent production fixes |
-| `release/*` | Release preparation |
+| Branch        | Convention                                |
+| ------------- | ----------------------------------------- |
+| `main`      | Production-ready, always deployable       |
+| `develop`   | Integration branch for completed features |
+| `feature/*` | One branch per feature                    |
+| `bugfix/*`  | Non-urgent defect fixes                   |
+| `hotfix/*`  | Urgent production fixes                   |
+| `release/*` | Release preparation                       |
 
 ### Commit Messages
 
@@ -766,34 +755,34 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 This project builds upon the work of the following open-source and research communities:
 
-| Project | Acknowledged for |
-| ------- | ---------------- |
-| Google Gemini | Primary LLM powering grounded responses |
-| LangChain | Retrieval chains and LLM orchestration |
-| LangGraph | Agent state machines and workflow engine |
-| FastAPI | Async, typed REST API framework |
-| Next.js | React application framework |
-| shadcn/ui | Accessible component foundation |
-| PostgreSQL | Production database |
-| SQLAlchemy | ORM and data access |
-| Alembic | Database migrations |
-| FAISS | Vector search over the knowledge base |
-| Sentence Transformers | Embedding model for retrieval |
+| Project               | Acknowledged for                         |
+| --------------------- | ---------------------------------------- |
+| Google Gemini         | Primary LLM powering grounded responses  |
+| LangChain             | Retrieval chains and LLM orchestration   |
+| LangGraph             | Agent state machines and workflow engine |
+| FastAPI               | Async, typed REST API framework          |
+| Next.js               | React application framework              |
+| shadcn/ui             | Accessible component foundation          |
+| PostgreSQL            | Production database                      |
+| SQLAlchemy            | ORM and data access                      |
+| Alembic               | Database migrations                      |
+| FAISS                 | Vector search over the knowledge base    |
+| Sentence Transformers | Embedding model for retrieval            |
 
 ---
 
 ## 24. Repository Badges
 
-| Badge | Status |
-| ----- | ------ |
-| Build | ![Build](https://img.shields.io/badge/build-passing-brightgreen) |
-| License | ![License](https://img.shields.io/badge/license-MIT-blue) |
-| Python Version | ![Python](https://img.shields.io/badge/python-3.13%2B-3776AB) |
-| Node Version | ![Node](https://img.shields.io/badge/node-20%2B-339933) |
-| FastAPI | ![FastAPI](https://img.shields.io/badge/FastAPI-009688) |
-| Next.js | ![Next.js](https://img.shields.io/badge/Next.js-15-000000) |
-| PostgreSQL | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1) |
-| AI Powered | ![AI Powered](https://img.shields.io/badge/AI-Powered-FF6F00) |
+| Badge          | Status                                                           |
+| -------------- | ---------------------------------------------------------------- |
+| Build          | ![Build](https://img.shields.io/badge/build-passing-brightgreen) |
+| License        | ![License](https://img.shields.io/badge/license-MIT-blue)        |
+| Python Version | ![Python](https://img.shields.io/badge/python-3.13%2B-3776AB)    |
+| Node Version   | ![Node](https://img.shields.io/badge/node-20%2B-339933)          |
+| FastAPI        | ![FastAPI](https://img.shields.io/badge/FastAPI-009688)          |
+| Next.js        | ![Next.js](https://img.shields.io/badge/Next.js-15-000000)       |
+| PostgreSQL     | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1) |
+| AI Powered     | ![AI Powered](https://img.shields.io/badge/AI-Powered-FF6F00)    |
 
 ---
 

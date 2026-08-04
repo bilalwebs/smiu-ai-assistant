@@ -84,6 +84,41 @@ class Settings(BaseSettings):
     redoc_url: str | None = "/redoc"
     openapi_url: str | None = "/openapi.json"
 
+    # --- authentication ---------------------------------------------------
+    jwt_secret: str = "dev-secret-change-me"
+    jwt_algorithm: str = "HS256"
+    jwt_issuer: str = "smiu-ai-assistant"
+    jwt_audience: str = "smiu-ai-assistant-api"
+    access_token_expire_minutes: int = 60
+    refresh_token_expire_days: int = 7
+    remember_me_expire_days: int = 30
+    email_verification_expire_minutes: int = 1440
+    password_reset_expire_minutes: int = 30
+    lockout_threshold: int = 5
+    lockout_minutes: int = 15
+    frontend_base_url: str = "http://localhost:3000"
+    frontend_reset_path: str = "reset-password"
+
+    # --- rate limiting -------------------------------------------------------
+    login_rate_limit: int = 10
+    login_rate_window: int = 60
+    register_rate_limit: int = 5
+    register_rate_window: int = 300
+    forgot_password_rate_limit: int = 5
+    forgot_password_rate_window: int = 300
+    reset_password_rate_limit: int = 5
+    reset_password_rate_window: int = 300
+    max_active_sessions: int = 10
+
+    # --- email / SMTP -----------------------------------------------------
+    smtp_enabled: bool = False
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
+    smtp_starttls: bool = True
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _parse_cors_origins(cls, value: Any) -> Any:
@@ -99,6 +134,13 @@ class Settings(BaseSettings):
         if normalized not in _VALID_LOG_LEVELS:
             raise ValueError(f"LOG_LEVEL must be one of {', '.join(_VALID_LOG_LEVELS)}")
         return normalized
+
+    @field_validator("jwt_algorithm", mode="after")
+    @classmethod
+    def _validate_jwt_algorithm(cls, value: str) -> str:
+        if value.lower() == "none":
+            raise ValueError("jwt_algorithm must not be 'none'")
+        return value
 
 
 class DevelopmentSettings(Settings):
@@ -140,9 +182,22 @@ class ProductionSettings(Settings):
         ...,
         description="Production PostgreSQL DSN; required and fail-fast when missing.",
     )
+    jwt_secret: str = Field(
+        ...,
+        description="JWT signing secret; required and fail-fast when missing.",
+    )
     docs_url: str | None = None
     redoc_url: str | None = None
     openapi_url: str | None = None
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def _validate_jwt_secret_production(cls, value: str) -> str:
+        if len(value) < 32:
+            raise ValueError("jwt_secret must be at least 32 characters in production")
+        if value == "dev-secret-change-me":
+            raise ValueError("jwt_secret must not be the default dev value in production")
+        return value
 
 
 _SETTINGS_BY_ENVIRONMENT: dict[Environment, type[Settings]] = {

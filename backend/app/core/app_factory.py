@@ -38,6 +38,7 @@ from app.database.session import reset_engine
 from app.exceptions.handlers import register_exception_handlers
 from app.middleware.cors import register_cors
 from app.middleware.logging import RequestLoggingMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware, RateLimitRule
 from app.middleware.request_id import RequestIDMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
 
@@ -157,6 +158,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         ),
     )
     register_cors(app, active_settings)
+
+    rate_limit_rules = {
+        "/api/v1/auth/login": RateLimitRule(
+            max_requests=active_settings.login_rate_limit,
+            window_seconds=active_settings.login_rate_window,
+        ),
+        "/api/v1/auth/register": RateLimitRule(
+            max_requests=active_settings.register_rate_limit,
+            window_seconds=active_settings.register_rate_window,
+        ),
+        "/api/v1/auth/forgot-password": RateLimitRule(
+            max_requests=active_settings.forgot_password_rate_limit,
+            window_seconds=active_settings.forgot_password_rate_window,
+        ),
+        "/api/v1/auth/reset-password": RateLimitRule(
+            max_requests=active_settings.reset_password_rate_limit,
+            window_seconds=active_settings.reset_password_rate_window,
+        ),
+    }
+    app.add_middleware(RateLimitMiddleware, rules=rate_limit_rules)
 
     register_exception_handlers(app)
 

@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.constants import DEFAULT_ERROR_CODE, HTTP_STATUS_ERROR_CODES
-from app.exceptions.app_error import AppError
+from app.exceptions.app_error import AppError, RateLimitError
 from app.schemas.response import ErrorBody, ErrorDetail, ErrorResponse
 from app.utils.request_id import get_request_id
 from app.utils.response import build_meta
@@ -63,16 +63,25 @@ def _error_json(
 async def app_error_handler(request: Request, exc: Exception) -> JSONResponse:
     """Translate an application error into the standard envelope."""
     app_error = cast(AppError, exc)
-    return _error_json(
-        status_code=app_error.status_code,
-        code=app_error.code,
-        message=app_error.message,
-        request=request,
-        details=(
-            [ErrorDetail(**detail) for detail in app_error.details]
-            if app_error.details
-            else None
+    headers: dict[str, str] | None = None
+    if isinstance(app_error, RateLimitError):
+        headers = {"Retry-After": str(app_error.retry_after)}
+    payload = ErrorResponse(
+        error=ErrorBody(
+            code=app_error.code,
+            message=app_error.message,
+            details=(
+                [ErrorDetail(**detail) for detail in app_error.details]
+                if app_error.details
+                else None
+            ),
         ),
+        meta=build_meta(request),
+    )
+    return JSONResponse(
+        status_code=app_error.status_code,
+        content=jsonable_encoder(payload),
+        headers=headers,
     )
 
 
