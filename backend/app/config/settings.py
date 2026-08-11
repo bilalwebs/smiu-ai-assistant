@@ -159,6 +159,8 @@ class TestingSettings(Settings):
     developer-local configuration.
     """
 
+    __test__ = False
+
     model_config = SettingsConfigDict(
         env_file=None,
         env_file_encoding="utf-8",

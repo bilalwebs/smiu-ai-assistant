@@ -33,8 +33,6 @@ TOKEN_TYPE_ACCESS = "access"
 TOKEN_TYPE_EMAIL_VERIFICATION = "email_verification"
 TOKEN_TYPE_PASSWORD_RESET = "password_reset"
 
-_UNSET = object()
-
 
 @dataclass(frozen=True)
 class TokenClaims:

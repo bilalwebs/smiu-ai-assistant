@@ -18,9 +18,10 @@ Usage:
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from ipaddress import IPv4Address, IPv6Address
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, PlainSerializer
+from pydantic import BaseModel, BeforeValidator, ConfigDict, PlainSerializer
 
 
 def to_utc_iso(value: datetime) -> str:
@@ -31,6 +32,21 @@ def to_utc_iso(value: datetime) -> str:
     """
     value = value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
     return value.isoformat().replace("+00:00", "Z")
+
+
+def _ip_to_str(value: object) -> object:
+    """Normalize an ORM IP value to its textual form.
+
+    The ``inet`` column type returns ``IPv4Address``/``IPv6Address`` objects
+    on PostgreSQL (asyncpg) while SQLite's varchar variant returns plain
+    strings; this keeps the API contract a stable ``string`` on both.
+    """
+    if isinstance(value, (IPv4Address, IPv6Address)):
+        return str(value)
+    return value
+
+
+IPAddressStr = Annotated[str, BeforeValidator(_ip_to_str)]
 
 
 UtcDateTime = Annotated[datetime, PlainSerializer(to_utc_iso, return_type=str)]

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 
-from app.schemas.base import ApiModel, UtcDateTime
+from app.schemas.base import IPAddressStr, ApiModel, UtcDateTime
 
 
 class SessionRead(ApiModel):
@@ -17,7 +17,7 @@ class SessionRead(ApiModel):
 
     id: uuid.UUID
     device_name: str | None = None
-    ip_address: str | None = None
+    ip_address: IPAddressStr | None = None
     created_at: UtcDateTime
     last_used_at: UtcDateTime | None = None
     expires_at: UtcDateTime

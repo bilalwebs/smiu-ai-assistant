@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import uuid
+from datetime import timedelta
 
 import pytest
 
 from app.services import AuditLogService
 from app.services.exceptions import NotFoundError, ValidationError
+from app.utils.time import utc_now
 
 
 async def test_create_log_happy_path(audit_log_service, user_factory) -> None:
@@ -100,15 +102,21 @@ async def test_create_log_missing_actor_raises(
 
 
 async def test_list_by_actor_returns_newest_first(
-    audit_log_service, user_factory
+    audit_log_service, user_factory, db_session
 ) -> None:
     user = await user_factory()
-    await audit_log_service.create_log(
+    first = await audit_log_service.create_log(
         action="a.first", resource_type="Request", actor_user_id=user.id
     )
-    await audit_log_service.create_log(
+    second = await audit_log_service.create_log(
         action="a.second", resource_type="Request", actor_user_id=user.id
     )
+    # ``created_at`` has second precision on SQLite, so pin explicit timestamps
+    # to make the newest-first ordering deterministic.
+    now = utc_now()
+    first.created_at = now - timedelta(minutes=5)
+    second.created_at = now
+    await db_session.flush()
     logs = await audit_log_service.list_by_actor(actor_user_id=user.id)
     assert [log.action for log in logs] == ["a.second", "a.first"]
 

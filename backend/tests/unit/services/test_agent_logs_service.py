@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import uuid
+from datetime import timedelta
 
 import pytest
 
 from app.models import AgentKey, AgentRunStatus, MessageRole
 from app.services import AgentLogService
 from app.services.exceptions import NotFoundError, ValidationError
+from app.utils.time import utc_now
 
 
 async def _conversation_and_message(conversation_service, chat_history_service, user_factory):
@@ -44,7 +46,7 @@ async def test_create_log_happy_path(
     )
     assert log.agent_key == AgentKey.ADMISSION
     assert log.run_status == AgentRunStatus.SUCCESS
-    assert log.confidence == 0.92
+    assert float(log.confidence) == pytest.approx(0.92)
     assert log.retry_count == 0
 
 
@@ -148,23 +150,29 @@ async def test_create_log_missing_message_raises(
 
 
 async def test_list_by_conversation_returns_newest_first(
-    conversation_service, chat_history_service, agent_log_service, user_factory
+    conversation_service, chat_history_service, agent_log_service, user_factory, db_session
 ) -> None:
     user, conversation, _ = await _conversation_and_message(
         conversation_service, chat_history_service, user_factory
     )
-    await agent_log_service.create_log(
+    first = await agent_log_service.create_log(
         run_status=AgentRunStatus.SUCCESS,
         user_id=user.id,
         conversation_id=conversation.id,
         intent="first",
     )
-    await agent_log_service.create_log(
+    second = await agent_log_service.create_log(
         run_status=AgentRunStatus.SUCCESS,
         user_id=user.id,
         conversation_id=conversation.id,
         intent="second",
     )
+    # ``created_at`` has second precision on SQLite, so pin explicit timestamps
+    # to make the newest-first ordering deterministic.
+    now = utc_now()
+    first.created_at = now - timedelta(minutes=5)
+    second.created_at = now
+    await db_session.flush()
     logs = await agent_log_service.list_by_conversation(conversation_id=conversation.id)
     assert [log.intent for log in logs] == ["second", "first"]
 

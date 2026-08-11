@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 
-from app.schemas.base import ApiModel, UtcDateTime
+from app.schemas.base import IPAddressStr, ApiModel, UtcDateTime
 
 
 class AuditLogRead(ApiModel):
@@ -20,7 +20,7 @@ class AuditLogRead(ApiModel):
     action: str
     resource_type: str
     resource_id: str | None = None
-    ip_address: str | None = None
+    ip_address: IPAddressStr | None = None
     user_agent: str | None = None
     correlation_id: str | None = None
     created_at: UtcDateTime

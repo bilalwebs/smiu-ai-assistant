@@ -13,7 +13,7 @@ from app.services.exceptions import BusinessRuleError, NotFoundError, Validation
 _SHA256 = "a" * 64
 
 
-async def _doc_kwargs(**overrides: object) -> dict[str, object]:
+def _doc_kwargs(**overrides: object) -> dict[str, object]:
     values: dict[str, object] = {
         "user_id": uuid.uuid4(),
         "original_filename": "transcript.pdf",
@@ -55,7 +55,7 @@ async def test_create_document_explicit_category(
 async def test_create_document_without_owner_raises(
     document_service: DocumentService,
 ) -> None:
-    kwargs = await _doc_kwargs()
+    kwargs = _doc_kwargs()
     kwargs.pop("user_id")
     with pytest.raises(BusinessRuleError):
         await document_service.create_document(**kwargs)

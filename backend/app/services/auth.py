@@ -250,7 +250,7 @@ class AuthService(BaseService):
         if user.email_verified_at is None:
             raise ForbiddenError(message="Email verification is required before login")
         if user.status != UserStatus.ACTIVE:
-            raise ForbiddenError(message="Account is disabled or suspended")
+            raise UnauthorizedError(message="Account is disabled or suspended")
 
         await self._users.update(
             user,
@@ -339,7 +339,9 @@ class AuthService(BaseService):
             raise UnauthorizedError(message="Invalid or expired refresh token")
 
         new_refresh_token = generate_refresh_token()
-        lifetime = expires_at - created_at
+        lifetime = timedelta(
+            days=round((expires_at - created_at).total_seconds() / 86400)
+        )
         new_jti = generate_jti()
         access_token = create_access_token(
             subject=str(user.id),
@@ -637,7 +639,11 @@ class AuthService(BaseService):
         active = await self._session_service._sessions.get_active_sessions(user_id)
         max_sessions = self._settings.max_active_sessions
         if len(active) > max_sessions:
-            sorted_sessions = sorted(active, key=lambda s: s.created_at)
+            sorted_sessions = sorted(
+                active,
+                key=lambda s: _ensure_aware(s.created_at)
+                or datetime.min.replace(tzinfo=UTC),
+            )
             to_revoke = sorted_sessions[: len(active) - max_sessions]
             for session in to_revoke:
                 await self._session_service._sessions.revoke_session(session)
