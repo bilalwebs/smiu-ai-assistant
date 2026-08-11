@@ -6,7 +6,7 @@ import uuid
 
 import pytest
 
-from app.models import RequestStatus, RequestType
+from app.models import NotificationType, RequestStatus, RequestType
 from app.services import RequestService
 from app.services.exceptions import (
     ConflictError,
@@ -155,6 +155,63 @@ async def test_assign_request_missing_request_raises(
         )
 
 
+async def test_assign_request_same_user_is_idempotent(
+    request_service, request_timeline_service, notification_service, user_factory
+) -> None:
+    owner = await user_factory()
+    assignee = await user_factory()
+    req = await request_service.create_request(
+        user_id=owner.id,
+        request_type=RequestType.GENERAL,
+        title="Hello",
+        status=RequestStatus.SUBMITTED,
+    )
+    await request_service.assign_request(request_id=req.id, assigned_to=assignee.id)
+    repeated = await request_service.assign_request(
+        request_id=req.id, assigned_to=assignee.id
+    )
+
+    assert repeated.id == req.id
+    assert repeated.status == RequestStatus.ASSIGNED
+    assert repeated.assigned_to == assignee.id
+
+    events = await request_timeline_service.get_events(request_id=req.id)
+    assert [event.action for event in events] == ["created", "assigned"]
+
+    page = await notification_service.list_user_notifications(user_id=owner.id)
+    assert len(page.items) == 2
+
+
+async def test_assign_request_to_different_user_records_new_event(
+    request_service, request_timeline_service, notification_service, user_factory
+) -> None:
+    owner = await user_factory()
+    first_assignee = await user_factory()
+    second_assignee = await user_factory()
+    req = await request_service.create_request(
+        user_id=owner.id,
+        request_type=RequestType.GENERAL,
+        title="Hello",
+        status=RequestStatus.SUBMITTED,
+    )
+    await request_service.assign_request(
+        request_id=req.id, assigned_to=first_assignee.id
+    )
+    reassigned = await request_service.assign_request(
+        request_id=req.id, assigned_to=second_assignee.id
+    )
+
+    assert reassigned.id == req.id
+    assert reassigned.assigned_to == second_assignee.id
+
+    events = await request_timeline_service.get_events(request_id=req.id)
+    assert [event.action for event in events] == ["created", "assigned", "assigned"]
+    assert events[2].metadata_ == {"assigned_to": str(second_assignee.id)}
+
+    page = await notification_service.list_user_notifications(user_id=owner.id)
+    assert len(page.items) == 3
+
+
 async def test_resolve_request_sets_resolved_at(request_service, user_factory) -> None:
     owner = await user_factory()
     req = await request_service.create_request(
@@ -263,3 +320,94 @@ async def test_change_status_to_closed_sets_closed_at(
 async def test_resolve_missing_request_raises(request_service: RequestService) -> None:
     with pytest.raises(NotFoundError):
         await request_service.resolve_request(request_id=uuid.uuid4())
+
+
+async def test_create_request_records_timeline_and_notification(
+    request_service, request_timeline_service, notification_service, user_factory
+) -> None:
+    owner = await user_factory()
+    req = await request_service.create_request(
+        user_id=owner.id,
+        request_type=RequestType.GENERAL,
+        title="Hello",
+        status=RequestStatus.SUBMITTED,
+    )
+    events = await request_timeline_service.get_events(request_id=req.id)
+    assert len(events) == 1
+    assert events[0].action == "created"
+    assert events[0].from_status is None
+    assert events[0].to_status == RequestStatus.SUBMITTED
+    assert events[0].actor_user_id == owner.id
+
+    page = await notification_service.list_user_notifications(user_id=owner.id)
+    assert len(page.items) == 1
+    notif = page.items[0]
+    assert notif.request_id == req.id
+    assert notif.type == NotificationType.REQUEST
+    assert req.request_no in notif.title
+
+
+async def test_create_draft_records_timeline_but_no_notification(
+    request_service, request_timeline_service, notification_service, user_factory
+) -> None:
+    owner = await user_factory()
+    req = await request_service.create_request(
+        user_id=owner.id, request_type=RequestType.GENERAL, title="Draft"
+    )
+    events = await request_timeline_service.get_events(request_id=req.id)
+    assert len(events) == 1
+    assert events[0].action == "created"
+    assert events[0].to_status == RequestStatus.DRAFT
+
+    page = await notification_service.list_user_notifications(user_id=owner.id)
+    assert len(page.items) == 0
+
+
+async def test_assign_request_records_timeline_and_notification(
+    request_service, request_timeline_service, notification_service, user_factory
+) -> None:
+    owner = await user_factory()
+    assignee = await user_factory()
+    req = await request_service.create_request(
+        user_id=owner.id,
+        request_type=RequestType.GENERAL,
+        title="Hello",
+        status=RequestStatus.SUBMITTED,
+    )
+    await request_service.assign_request(request_id=req.id, assigned_to=assignee.id)
+
+    events = await request_timeline_service.get_events(request_id=req.id)
+    assert [event.action for event in events] == ["created", "assigned"]
+    assert events[1].from_status == RequestStatus.SUBMITTED
+    assert events[1].to_status == RequestStatus.ASSIGNED
+    assert events[1].metadata_ == {"assigned_to": str(assignee.id)}
+
+    page = await notification_service.list_user_notifications(user_id=owner.id)
+    titles = [item.title for item in page.items]
+    assert len(titles) == 2
+    assert any("assigned" in title for title in titles)
+
+
+async def test_change_status_records_timeline_and_notification(
+    request_service, request_timeline_service, notification_service, user_factory
+) -> None:
+    owner = await user_factory()
+    req = await request_service.create_request(
+        user_id=owner.id,
+        request_type=RequestType.GENERAL,
+        title="Hello",
+        status=RequestStatus.SUBMITTED,
+    )
+    await request_service.change_status(
+        request_id=req.id, status=RequestStatus.PROCESSING
+    )
+
+    events = await request_timeline_service.get_events(request_id=req.id)
+    assert [event.action for event in events] == ["created", "processing"]
+    assert events[1].from_status == RequestStatus.SUBMITTED
+    assert events[1].to_status == RequestStatus.PROCESSING
+
+    page = await notification_service.list_user_notifications(user_id=owner.id)
+    titles = [item.title for item in page.items]
+    assert len(titles) == 2
+    assert any("processing" in title for title in titles)

@@ -13,6 +13,8 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
+    NotificationPriority,
+    NotificationType,
     Request,
     RequestPriority,
     RequestSource,
@@ -28,11 +30,23 @@ from app.services.exceptions import (
     NotFoundError,
     ValidationError,
 )
+from app.services.notifications import NotificationService
+from app.services.request_timeline import RequestTimelineService
 from app.utils.time import utc_now
 
 _INITIAL_STATUSES: frozenset[RequestStatus] = frozenset(
     {RequestStatus.DRAFT, RequestStatus.SUBMITTED}
 )
+
+_OWNER_NOTIFICATION_PRIORITIES: dict[RequestStatus, NotificationPriority] = {
+    RequestStatus.RESOLVED: NotificationPriority.HIGH,
+    RequestStatus.REJECTED: NotificationPriority.HIGH,
+    RequestStatus.ASSIGNED: NotificationPriority.MEDIUM,
+    RequestStatus.SUBMITTED: NotificationPriority.MEDIUM,
+    RequestStatus.IN_REVIEW: NotificationPriority.LOW,
+    RequestStatus.PROCESSING: NotificationPriority.LOW,
+    RequestStatus.CLOSED: NotificationPriority.LOW,
+}
 
 _ALLOWED_TRANSITIONS: dict[RequestStatus, frozenset[RequestStatus]] = {
     RequestStatus.DRAFT: frozenset({RequestStatus.SUBMITTED, RequestStatus.IN_REVIEW}),
@@ -79,11 +93,15 @@ class RequestService(BaseService):
         requests: RequestRepository | None = None,
         users: UserRepository | None = None,
         departments: DepartmentRepository | None = None,
+        timeline: RequestTimelineService | None = None,
+        notifications: NotificationService | None = None,
     ) -> None:
         super().__init__(session)
         self._requests = requests or RequestRepository(session)
         self._users = users or UserRepository(session)
         self._departments = departments or DepartmentRepository(session)
+        self._timeline = timeline or RequestTimelineService(session)
+        self._notifications = notifications or NotificationService(session)
 
     async def create_request(
         self,
@@ -115,7 +133,7 @@ class RequestService(BaseService):
             )
         title = self._validate_not_blank(title, field="title")
         request_no = await self._allocate_request_no(request_no)
-        return await self._requests.create(
+        request = await self._requests.create(
             request_no=request_no,
             user_id=user_id,
             department_id=department_id,
@@ -127,18 +145,44 @@ class RequestService(BaseService):
             description=description,
             source=source,
         )
+        await self._record_timeline_event(
+            request=request, to_status=status, action="created", actor_user_id=user_id
+        )
+        await self._notify_owner(request=request, status=status)
+        return request
 
     async def assign_request(
         self, *, request_id: uuid.UUID, assigned_to: uuid.UUID
     ) -> Request:
-        """Assign an in-flight request to a staff member."""
+        """Assign an in-flight request to a staff member.
+
+        Idempotent when the request is already assigned to the same user: the
+        existing request is returned without writing another timeline event or
+        notification. Assignment to a different user follows the transition
+        rules and is recorded as a new event.
+        """
         request = await self._require_request(request_id)
         if await self._users.get_by_id(assigned_to) is None:
             raise NotFoundError(message="Assignee user not found")
+        if (
+            request.status == RequestStatus.ASSIGNED
+            and request.assigned_to == assigned_to
+        ):
+            return request
         self._assert_transition_allowed(request.status, RequestStatus.ASSIGNED)
-        return await self._requests.update(
+        from_status = request.status
+        request = await self._requests.update(
             request, status=RequestStatus.ASSIGNED, assigned_to=assigned_to
         )
+        await self._record_timeline_event(
+            request=request,
+            from_status=from_status,
+            to_status=RequestStatus.ASSIGNED,
+            action="assigned",
+            metadata_={"assigned_to": str(assigned_to)},
+        )
+        await self._notify_owner(request=request, status=RequestStatus.ASSIGNED)
+        return request
 
     async def resolve_request(
         self,
@@ -180,6 +224,7 @@ class RequestService(BaseService):
                 details=[{"field": "status", "reason": "no state change"}],
             )
         self._assert_transition_allowed(request.status, status)
+        from_status = request.status
         changes: dict[str, Any] = {"status": status}
         if status == RequestStatus.RESOLVED:
             changes["resolved_at"] = utc_now()
@@ -193,7 +238,60 @@ class RequestService(BaseService):
             changes["rejection_reason"] = rejection_reason
         elif status == RequestStatus.CLOSED:
             changes["closed_at"] = utc_now()
-        return await self._requests.update(request, **changes)
+        request = await self._requests.update(request, **changes)
+        await self._record_timeline_event(
+            request=request,
+            from_status=from_status,
+            to_status=status,
+            action=status.value,
+        )
+        await self._notify_owner(request=request, status=status)
+        return request
+
+    async def _record_timeline_event(
+        self,
+        *,
+        request: Request,
+        to_status: RequestStatus,
+        action: str,
+        from_status: RequestStatus | None = None,
+        note: str | None = None,
+        actor_user_id: uuid.UUID | None = None,
+        metadata_: dict[str, Any] | None = None,
+    ) -> None:
+        """Append one event to a request's timeline (DATABASE_DESIGN.md §18)."""
+        await self._timeline.add_event(
+            request_id=request.id,
+            from_status=from_status,
+            to_status=to_status,
+            action=action,
+            note=note,
+            actor_user_id=actor_user_id,
+            metadata_=metadata_,
+        )
+
+    async def _notify_owner(
+        self, *, request: Request, status: RequestStatus
+    ) -> None:
+        """Fan a workflow event out to the owner's feed (§32.5); drafts are silent."""
+        if status == RequestStatus.DRAFT:
+            return
+        body: str | None = None
+        if status == RequestStatus.RESOLVED and request.resolution_notes:
+            body = request.resolution_notes
+        elif status == RequestStatus.REJECTED and request.rejection_reason:
+            body = request.rejection_reason
+        await self._notifications.create_notification(
+            user_id=request.user_id,
+            request_id=request.id,
+            type=NotificationType.REQUEST,
+            title=f"Request {request.request_no} is now {status.value}",
+            body=body,
+            link=f"/requests/{request.id}",
+            priority=_OWNER_NOTIFICATION_PRIORITIES.get(
+                status, NotificationPriority.LOW
+            ),
+        )
 
     async def _allocate_request_no(self, provided: str | None) -> str:
         """Return the provided request number or allocate a unique one."""

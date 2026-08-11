@@ -125,7 +125,9 @@ async def test_get_events_returns_chronological_order(
         action="assign",
     )
     events = await request_timeline_service.get_events(request_id=req.id)
-    assert [event.id for event in events] == [first.id, second.id]
+    assert len(events) == 3
+    assert events[0].action == "created"
+    assert [event.id for event in events[1:]] == [first.id, second.id]
 
 
 async def test_get_events_missing_request_raises(
