@@ -4,5 +4,41 @@ version = "0.1.0"
 description = "LangChain / LangGraph agent service for the SMU AI Assistant platform"
 requires-python = ">=3.11"
 
-# [tool.ruff]
-# Placeholder - lint configuration (target-version, line-length, select)
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+pythonpath = [".."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "ASYNC", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ai"]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+packages = ["ai"]
+exclude = ["^ai/tests/"]
+# Disable incremental cache: the pydantic plugin + LangGraph type surface can
+# leave a stale cache that hangs subsequent plain runs on this environment.
+incremental = false
+
+# LangChain/LangGraph and the LLM provider SDKs expose a very large type
+# surface that slows ad-hoc runs; they are consumed at runtime and verified by
+# execution tests, so their types are not followed here.
+[[tool.mypy.overrides]]
+module = [
+    "langgraph.*",
+    "langchain_core.*",
+    "google.*",
+    "openai",
+    "groq",
+    "httpx",
+]
+follow_imports = "skip"
+ignore_missing_imports = true

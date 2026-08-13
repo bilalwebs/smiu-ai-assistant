@@ -1,10 +1,12 @@
-# AI service dependencies (placeholder list, pin versions when implementing)
+# AI service dependencies
 #
-# langchain
-# langchain-openai
-# langgraph
-# langchain-postgres
-# langchainhub
-#
-# pydantic
-# python-dotenv
+# Pinned to the versions verified in this environment (Python 3.11).
+langgraph==1.2.10
+langchain-core==1.5.3
+google-genai==2.16.0
+openai==1.51.0
+groq==0.37.1
+httpx==0.28.1
+pydantic==2.13.4
+pydantic-settings==2.10.1
+python-dotenv==1.0.1
