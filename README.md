@@ -115,6 +115,8 @@ Agentic AI was selected because it transforms the system from a **passive answer
 
 ## 3. System Architecture
 
+<div align="center">
+
 ```
 Student
    │
@@ -140,6 +142,8 @@ LLM (Gemini 2.5 Flash)
    ▼
 Grounded Response + Citations
 ```
+
+</div>
 
 | Layer                    | Responsibility                                                                                                                |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -497,6 +501,8 @@ cd testing && npm run test:e2e
 
 A student request flows through the system as follows:
 
+<div align="center">
+
 ```
 Student
    │  sends a natural-language message
@@ -527,6 +533,8 @@ UI (Next.js)
    ▼
 Student
 ```
+
+</div>
 
 Each step is logged with a correlation ID and auditable — every answer is grounded and traceable (AI_ARCHITECTURE.md §11).
 
