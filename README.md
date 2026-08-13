@@ -1,5 +1,3 @@
-<div align="center">
-
 ---
 
 ## 1. Project Overview
@@ -786,6 +784,4 @@ This project builds upon the work of the following open-source and research comm
 
 ---
 
-<p align="center">
-  Built for <strong>Sindh Madressatul Islam University (SMIU)</strong> — Department of Computer Science
-</p>
+Built for **Sindh Madressatul Islam University (SMIU)** — Department of Computer Science.
