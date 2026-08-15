@@ -10,3 +10,12 @@ httpx==0.28.1
 pydantic==2.13.4
 pydantic-settings==2.10.1
 python-dotenv==1.0.1
+# RAG embedding provider (AI_ARCHITECTURE.md §15.1): Sentence Transformers.
+# Loaded lazily by ai/rag/embeddings.py; model weights are downloaded at first
+# embed request in production, never during tests.
+sentence-transformers==5.6.1
+# FAISS vector index (AI_ARCHITECTURE.md §15.2, §16): cosine similarity via
+# L2-normalized vectors + IndexFlatIP (inner product). Consumed by
+# ai/rag/faiss_index.py; also an explicit dependency for numpy below.
+faiss-cpu==1.14.3
+numpy==2.3.5

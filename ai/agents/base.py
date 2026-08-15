@@ -26,6 +26,7 @@ Safety properties:
 from __future__ import annotations
 
 import json
+import math
 from abc import ABC
 from collections.abc import Sequence
 
@@ -215,17 +216,29 @@ class SpecialistAgent(ABC):
 
         Citations are derived only from retrieved chunks — a cited id that is
         not in the retrieved set is ignored, never invented (§19.1, §20.3).
-        Duplicate chunk citations are de-duplicated and the list is ordered by
-        retrieval score, highest first (§19.3).
+        Duplicate chunk citations are de-duplicated (one citation per chunk per
+        message, §19.3). Ordering is deterministic: retrieval score, highest
+        first, with the retrieved position as the tie-break (§16.3/§16.5) — the
+        order is identical on repeated execution and never follows the LLM's
+        citation order. When duplicate chunk ids appear in the retrieved set
+        the strongest (highest retrieval score) occurrence is kept. Scores are
+        clamped to the 0..1 ``ai_sources_score_check`` contract (§19.4);
+        non-finite scores degrade to 0.0 instead of failing validation.
         """
-        by_id = {chunk.chunk_id: chunk for chunk in chunks}
+        by_id: dict[str, RetrievedChunk] = {}
+        position: dict[str, int] = {}
+        for index, entry in enumerate(chunks):
+            existing = by_id.get(entry.chunk_id)
+            if existing is None or entry.score > existing.score:
+                by_id[entry.chunk_id] = entry
+                position[entry.chunk_id] = index
         seen: set[str] = set()
         citations: list[Citation] = []
         for chunk_id in cited_chunk_ids:
             chunk = by_id.get(chunk_id)
-            if chunk is None or chunk.chunk_id in seen:
+            if chunk is None or chunk_id in seen:
                 continue
-            seen.add(chunk.chunk_id)
+            seen.add(chunk_id)
             citations.append(
                 Citation(
                     title=chunk.title,
@@ -233,10 +246,16 @@ class SpecialistAgent(ABC):
                     snippet=chunk.snippet,
                     document_id=chunk.document_id,
                     chunk_id=chunk.chunk_id,
-                    relevance_score=min(max(chunk.score, 0.0), 1.0),
+                    relevance_score=_clamp_score(chunk.score),
                 )
             )
-        return sorted(citations, key=lambda citation: _score_for(by_id, citation), reverse=True)
+        citations.sort(
+            key=lambda citation: (
+                -citation.relevance_score,
+                position[citation.chunk_id or ""],
+            )
+        )
+        return citations
 
     # --- full specialist pass (§11 specialist phase) ------------------------
 
@@ -339,9 +358,18 @@ class SpecialistAgent(ABC):
         )
 
 
-def _score_for(by_id: dict[str, RetrievedChunk], citation: Citation) -> float:
-    chunk = by_id.get(citation.chunk_id or "")
-    return chunk.score if chunk is not None else 0.0
+def _clamp_score(score: float) -> float:
+    """Clamp a retrieval score to the 0..1 citation contract (§19.4).
+
+    ``Citation.relevance_score`` is constrained to 0..1 to match the
+    ``ai_sources_score_check`` database constraint (DATABASE_DESIGN.md §32.6).
+    Non-finite scores (NaN/inf) cannot come from the Phase 9 retriever (§16.3
+    validation) and would otherwise fail that constraint; they degrade to 0.0 —
+    a safe citation, never a crash or a fabricated score.
+    """
+    if not math.isfinite(score):
+        return 0.0
+    return min(max(score, 0.0), 1.0)
 
 
 def _parse_generation_json(

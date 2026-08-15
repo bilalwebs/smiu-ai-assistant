@@ -45,6 +45,12 @@ data/knowledge/*
 database/backups/*
 !**/.gitkeep
 
+# --- Regenerable FAISS vector index (AI_ARCHITECTURE.md §36.7) ---
+# The index is a cache rebuilt from knowledge/ + knowledge_chunks; its files
+# are excluded from retention.
+knowledge/vectorstore/*
+!**/.gitkeep
+
 # --- Backend local database ---
 backend/data/
 

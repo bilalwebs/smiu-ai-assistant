@@ -68,6 +68,14 @@ class ContextBuilder:
         self.max_tokens = max_tokens
         self._estimate_tokens = estimate_tokens or _default_estimator
 
+    def estimate_tokens(self, text: str) -> int:
+        """Return the estimated token count of ``text`` (§17.3).
+
+        Uses the injected estimator, defaulting to the deterministic
+        ``max(1, len(text) // 4)`` approximation — never a tokenizer download.
+        """
+        return self._estimate_tokens(text)
+
     def build(
         self,
         *,
@@ -186,8 +194,12 @@ class ContextBuilder:
         )
 
     def _source_block(self, chunk: RetrievedChunk, index: int) -> str:
+        # The chunk id is rendered so the LLM can cite the exact retrieved
+        # chunk (§19.1/§19.3 — citation assembly maps cited_chunk_ids onto the
+        # retrieved set); title + category keep each block labeled (§17.2).
         return (
-            f"[Source {index}] {chunk.title} (category: {chunk.category})\n"
+            f"[Source {index}] {chunk.title} (category: {chunk.category}) "
+            f"[chunk: {chunk.chunk_id}]\n"
             f"{chunk.snippet}"
         )
 

@@ -39,6 +39,10 @@ module = [
     "openai",
     "groq",
     "httpx",
+    "sentence_transformers",
+    "torch",
+    "faiss",
+    "numpy",
 ]
 follow_imports = "skip"
 ignore_missing_imports = true
