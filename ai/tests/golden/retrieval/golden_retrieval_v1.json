@@ -1,0 +1,143 @@
+{
+  "id": "golden-retrieval-v1",
+  "name": "SMIU knowledge base retrieval golden set",
+  "version": 1,
+  "description": "Versioned ground-truth retrieval set over a representative SMIU knowledge corpus (admission, examination, faq, documents). Expected chunk ids are the deterministic sha256 chunk ids produced by the Phase 9 ingestion pipeline (AI_ARCHITECTURE.md §36.4); regenerating this set requires re-running the pipeline and re-validating retrieval (TESTING_STRATEGY.md §12.2-12.3, §13.6).",
+  "documents": [
+    {
+      "id": "admission-policy",
+      "title": "Admission Policy",
+      "category": "admission",
+      "version": "1",
+      "source_path": "admission/admission-policy.md",
+      "author": "Admissions Office",
+      "text": "Eligibility: applicants must have secured at least 60 percent marks in their intermediate (HSC) or equivalent examination to be considered for undergraduate admission at SMIU. Admission is merit-based and seats are allocated in order of merit.\n\nThe admission process opens in August each year. Applicants submit an online form, upload scanned documents, and pay the processing fee before the announced deadline. Late applications are not accepted."
+    },
+    {
+      "id": "required-documents",
+      "title": "Required Documents",
+      "category": "admission",
+      "version": "1",
+      "source_path": "admission/required-documents.md",
+      "author": "Admissions Office",
+      "text": "Required documents: a completed admission application form, attested copies of the intermediate and matriculation certificates, two passport-sized photographs, a copy of the CNIC or B-Form, and the original domicile certificate. Candidates must bring the originals for verification at the time of interview."
+    },
+    {
+      "id": "date-sheet",
+      "title": "Examination Date Sheet",
+      "category": "examination",
+      "version": "1",
+      "source_path": "examination/date-sheet.md",
+      "author": "Examination Department",
+      "text": "Final examinations are held in January for the fall semester and in June for the spring semester. The official date sheet is published on the examination department notice board and the university website at least two weeks before the first paper.\n\nAdmit cards are issued one week before the examinations begin. Students must collect their admit cards from the examination department and present them at every paper."
+    },
+    {
+      "id": "exam-rules",
+      "title": "Examination Rules",
+      "category": "examination",
+      "version": "1",
+      "source_path": "examination/exam-rules.md",
+      "author": "Examination Department",
+      "text": "Examination rules: students must report to the examination hall fifteen minutes before the start of the paper. Calculators and mobile phones are strictly prohibited inside the hall. Under the improvement policy, a student who has passed a paper may appear again in the next examination to improve their grade, and the better grade is retained."
+    },
+    {
+      "id": "faq",
+      "title": "University FAQ",
+      "category": "faq",
+      "version": "1",
+      "source_path": "faq/faq.md",
+      "author": "Registrar's Office",
+      "text": "Office timings: the registrar's office is open from 9:00 am to 5:00 pm, Monday to Friday. The admission office observes the same timings and remains closed on public holidays.\n\nContact: for general inquiries, students may visit the main office on campus or call the university helpline during office hours. Departmental contact details are listed on the university website."
+    },
+    {
+      "id": "academic-calendar",
+      "title": "Academic Calendar 2026",
+      "category": "documents",
+      "version": "1",
+      "source_path": "documents/academic-calendar.md",
+      "author": "Academic Affairs",
+      "text": "Academic calendar 2026: the spring semester begins on 16 February 2026 and ends on 19 June 2026. The fall semester begins on 17 August 2026 and ends on 18 December 2026.\n\nMid-term examinations are held in the ninth week of each semester. The final examinations are followed by a two-week results preparation period before grades are announced."
+    }
+  ],
+  "queries": [
+    {
+      "id": "q-admission-eligibility",
+      "query": "What is the minimum eligibility percentage for undergraduate admission at SMIU?",
+      "category": "admission",
+      "expected_chunk_ids": [
+        "43fffe389e0c672b2d48ebf2f98c0a07ea8d074edc67ce6e249c03c8af1b3105"
+      ],
+      "note": "admission-policy.md chunk 0 (Eligibility)"
+    },
+    {
+      "id": "q-admission-documents",
+      "query": "What documents do I need to submit with my admission application?",
+      "category": "admission",
+      "expected_chunk_ids": [
+        "24461aa0577ea3033ef2d9a408c91595167900ca0926337ca11812aa141f21ce"
+      ],
+      "note": "required-documents.md chunk 0"
+    },
+    {
+      "id": "q-exam-datesheet",
+      "query": "When and where is the examination date sheet published?",
+      "category": "examination",
+      "expected_chunk_ids": [
+        "5ea7690fac19fd5e9768ea3f7c92141e91f81e6bc2482acaf0f4e17ed52246e4"
+      ],
+      "note": "date-sheet.md chunk 0"
+    },
+    {
+      "id": "q-exam-improvement",
+      "query": "Can I improve my grade under the improvement policy?",
+      "category": "examination",
+      "expected_chunk_ids": [
+        "9d401f3711d9d648a0d40ade74ab01c470adff1a5073af936d5a28e77d5f79d0"
+      ],
+      "note": "exam-rules.md chunk 0"
+    },
+    {
+      "id": "q-faq-timings",
+      "query": "What are the registrar's office timings?",
+      "category": "faq",
+      "expected_chunk_ids": [
+        "19fc34247137abb6a32cfbe327aa199d19df42a28b5f8ab7c81a094ab83889ec"
+      ],
+      "note": "faq.md chunk 0 (Office timings)"
+    },
+    {
+      "id": "q-faq-contact",
+      "query": "How can I contact the university for general inquiries?",
+      "category": "faq",
+      "expected_chunk_ids": [
+        "5776bf66e5e3556e612b64b72e18f7452da7f66ff9ad4be305f0b5073a8159bd"
+      ],
+      "note": "faq.md chunk 1 (Contact)"
+    },
+    {
+      "id": "q-doc-calendar",
+      "query": "When does the fall semester begin in 2026?",
+      "category": "documents",
+      "expected_chunk_ids": [
+        "44400a383035decb55dce7dbc7491eddbccd26244255bfa5bcec02ce839bc3e1"
+      ],
+      "note": "academic-calendar.md chunk 0"
+    },
+    {
+      "id": "q-doc-midterms",
+      "query": "In which week are mid-term examinations held?",
+      "category": "documents",
+      "expected_chunk_ids": [
+        "6d8e59a81b897f54c9a86397fe0987b6f15e526cc6e7b91d410ab0f2fad73ac3"
+      ],
+      "note": "academic-calendar.md chunk 1"
+    },
+    {
+      "id": "q-faq-scholarship",
+      "query": "What is the minimum GPA for the scholarship program?",
+      "category": "faq",
+      "expected_chunk_ids": [],
+      "note": "Information-unavailable query (no scholarship content in the corpus); tests the grounded 'information unavailable' path per TESTING_STRATEGY.md §12.6."
+    }
+  ]
+}
