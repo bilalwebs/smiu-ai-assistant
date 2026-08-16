@@ -6,7 +6,9 @@ fastapi==0.115.14
 uvicorn[standard]==0.34.2
 
 # --- Validation & configuration ---
-pydantic==2.11.4
+# pydantic 2.13.4 is required by langchain-core (AI runtime); verified against
+# the full backend suite.
+pydantic==2.13.4
 pydantic-settings==2.9.1
 
 # --- Database (setup only in this phase) ---
@@ -21,3 +23,13 @@ argon2-cffi==23.1.0
 PyJWT==2.10.1
 aiosmtplib==3.0.2
 email-validator==2.2.0
+
+# --- AI runtime (Step A: AIChatService facade + /api/v1/ai/chat) ---
+# The facade imports the ``ai`` service lazily (app/services/ai_chat.py);
+# these are the versions that import-clean under the tested set. Pinned to
+# match the AI project (ai/requirements.txt) where the version is shared.
+langgraph==1.2.10
+langchain-core==1.5.5
+google-genai==2.16.0
+groq==0.37.1
+openai==1.51.0

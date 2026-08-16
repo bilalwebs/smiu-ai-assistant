@@ -66,7 +66,25 @@ class BusinessRuleError(ValidationError):
     """A domain business-rule violation (HTTP 422)."""
 
 
+class AIUnavailableError(app_error.ServiceUnavailableError):
+    """The AI workflow cannot be constructed or run (HTTP 503, code ``AI005``).
+
+    Raised when the vector index is missing, the LLM gateway cannot be
+    configured, or the workflow cannot execute (API_SPECIFICATION.md §26 ``AI``
+    domain). The message never leaks raw provider errors or secrets.
+    """
+
+    def __init__(
+        self,
+        *,
+        message: str,
+        details: list[dict[str, str]] | None = None,
+    ) -> None:
+        super().__init__(code="AI005", message=message, details=details)
+
+
 __all__ = [
+    "AIUnavailableError",
     "BusinessRuleError",
     "ConflictError",
     "InvalidStateError",

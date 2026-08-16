@@ -37,5 +37,9 @@ class KnowledgeChunkRepository(BaseRepository[KnowledgeChunk]):
             offset=offset,
         )
 
+    async def get_by_vector_id(self, vector_id: str) -> KnowledgeChunk | None:
+        """Resolve a vector-store chunk id to its persisted row, or ``None``."""
+        return await self.get(KnowledgeChunk.vector_id == vector_id)
+
 
 __all__ = ["KnowledgeChunkRepository"]

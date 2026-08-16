@@ -637,12 +637,14 @@ Phase 9 tasks 7–8 evidence (IMPLEMENTATION_PLAN.md §4 RAG tasks 7–8; AI_ARC
   - Source: `API_SPECIFICATION.md` §21.4
   - Implementation: `GET /api/v1/ai/sources/{message_id}`
   - Verification: `test_ai_api.py` (sources tests incl. owner-scoping)
-- `[ ]` **AI reply generation (`/ai/chat` boundary)**
+- `[x]` **AI reply generation (`/ai/chat` boundary)**
   - Source: `API_SPECIFICATION.md` §21.1; AI_ARCHITECTURE.md §2
-  - Implementation: not present — the agentic boundary is intentionally unwired; message send persists user messages only
-- `[ ]` **Conversation memory integration**
-  - Source: AI_ARCHITECTURE.md §21
-  - Implementation: not present (only `chat_history`/`ai_conversations` persistence)
+  - Implementation: `backend/app/api/v1/endpoints/ai.py` (`/ai/chat`), `backend/app/services/ai_chat.py` (Step A facade), `backend/app/schemas/ai.py`, `backend/app/dependencies/services.py`, `backend/app/repositories/knowledge_chunks.py` (`get_by_vector_id`), `backend/app/services/ai_sources.py` (citation persistence)
+  - Verification: `backend/tests/api/test_ai_chat_api.py` (8), `backend/tests/unit/services/test_ai_chat_service.py` (11)
+- `[x]` **Conversation memory integration**
+  - Source: AI_ARCHITECTURE.md §21, §22.5, §23.1
+  - Implementation: `backend/app/services/ai_memory.py` (`ConversationMemoryWriter` — the workflow's `persist_writer` boundary), `backend/app/services/ai_chat.py` (session-memory rebuild from persisted `chat_history` + opt-in summary flush). The existing `ai/memory/manager.py` is reused unchanged; message/source persistence stays owned by `ChatHistoryService`/`AISourceService`, so no duplicates are created
+  - Verification: `backend/tests/unit/services/test_ai_chat_memory.py` (16)
 - `[ ]` **Chat UI (states, streaming, sources)**
   - Source: ui-ux-design.md §13, §36
   - Implementation: not present (`frontend/app/chat/`, `frontend/components/chat/` empty)

@@ -36,6 +36,7 @@ from app.repositories import (
     UserRepository,
 )
 from app.services import (
+    AIChatService,
     AISourceService,
     AuditLogService,
     AuthService,
@@ -115,6 +116,11 @@ def get_knowledge_chunk_service(db: Session) -> KnowledgeChunkService:
 def get_ai_source_service(db: Session) -> AISourceService:
     """Yield a request-scoped AI-source service."""
     return AISourceService(db)
+
+
+def get_ai_chat_service(db: Session) -> AIChatService:
+    """Yield a request-scoped AI chat service."""
+    return AIChatService(db)
 
 
 def get_feedback_service(db: Session) -> FeedbackService:

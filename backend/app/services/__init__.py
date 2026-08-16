@@ -11,7 +11,9 @@ Usage:
 """
 
 from app.services.agent_logs import AgentLogService
+from app.services.ai_chat import AIChatService
 from app.services.ai_conversations import ConversationService
+from app.services.ai_memory import ConversationMemoryWriter
 from app.services.ai_sources import AISourceService
 from app.services.audit_logs import AuditLogService
 from app.services.auth import AuthService
@@ -21,6 +23,7 @@ from app.services.departments import DepartmentService
 from app.services.documents import DocumentService
 from app.services.email import EmailService
 from app.services.exceptions import (
+    AIUnavailableError,
     BusinessRuleError,
     ConflictError,
     InvalidStateError,
@@ -38,7 +41,9 @@ from app.services.students import StudentService
 from app.services.users import UserService
 
 __all__ = [
+    "AIChatService",
     "AISourceService",
+    "AIUnavailableError",
     "AgentLogService",
     "AuditLogService",
     "AuthService",
@@ -46,6 +51,7 @@ __all__ = [
     "BusinessRuleError",
     "ChatHistoryService",
     "ConflictError",
+    "ConversationMemoryWriter",
     "ConversationService",
     "DepartmentService",
     "DocumentService",

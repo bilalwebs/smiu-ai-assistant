@@ -25,6 +25,16 @@ plugins = ["pydantic.mypy"]
 packages = ["app"]
 exclude = ["alembic"]
 
+# The AI package is a separate mypy project with its own config and strict
+# baseline (ai/pyproject.toml). The backend facade only consumes its public
+# types, so ai modules are followed silently and never checked under the
+# backend's config (mirrors how the AI project skips its own third-party deps).
+[[tool.mypy.overrides]]
+module = ["ai.*"]
+follow_imports = "silent"
+ignore_errors = true
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 addopts = "-q"
 asyncio_mode = "auto"
