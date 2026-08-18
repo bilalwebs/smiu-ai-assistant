@@ -29,11 +29,14 @@ class ChatRequest(BaseModel):
     ``conversation_id`` is optional: omit it to start a new conversation, or
     pass it to continue an existing (owned, active) one. ``department_id``
     records the optional origin (department page) of a new conversation.
+    ``document_ids`` references previously uploaded documents whose extracted
+    text should be included as context for this turn.
     """
 
     conversation_id: uuid.UUID | None = None
     message: str = Field(min_length=1, max_length=4000)
     department_id: uuid.UUID | None = None
+    document_ids: list[uuid.UUID] = Field(default_factory=list)
 
 
 class HandoffRead(ApiModel):

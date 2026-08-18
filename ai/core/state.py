@@ -194,3 +194,4 @@ class WorkflowState(BaseModel):
     retrieved_context: list[RetrievedChunk] = Field(default_factory=list)
     agent_output: AgentOutput | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
+    user_document_texts: list[str] = Field(default_factory=list)

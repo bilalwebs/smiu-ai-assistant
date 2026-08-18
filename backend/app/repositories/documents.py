@@ -54,5 +54,26 @@ class DocumentRepository(BaseRepository[Document]):
             offset=offset,
         )
 
+    async def list_by_conversation(
+        self,
+        user_id: uuid.UUID,
+        *,
+        options: Sequence[ExecutableOption] = (),
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[Document]:
+        """List a user's documents linked via their chat messages in any conversation.
+
+        Documents are associated with users directly (user_id). This lists all
+        documents owned by a user, scoped to their user_id.
+        """
+        return await self.list(
+            Document.user_id == user_id,
+            order_by=[Document.created_at.desc()],
+            options=options,
+            limit=limit,
+            offset=offset,
+        )
+
 
 __all__ = ["DocumentRepository"]

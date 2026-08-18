@@ -24,6 +24,10 @@ PyJWT==2.10.1
 aiosmtplib==3.0.2
 email-validator==2.2.0
 
+# --- File upload / PDF extraction ---
+pypdf==5.1.0
+python-multipart==0.0.18
+
 # --- AI runtime (Step A: AIChatService facade + /api/v1/ai/chat) ---
 # The facade imports the ``ai`` service lazily (app/services/ai_chat.py);
 # these are the versions that import-clean under the tested set. Pinned to

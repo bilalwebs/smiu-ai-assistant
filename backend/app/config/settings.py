@@ -110,6 +110,10 @@ class Settings(BaseSettings):
     reset_password_rate_window: int = 300
     max_active_sessions: int = 10
 
+    # --- file storage ----------------------------------------------------
+    storage_path: str = "storage/uploads"
+    max_upload_size_mb: int = 10
+
     # --- email / SMTP -----------------------------------------------------
     smtp_enabled: bool = False
     smtp_host: str = "smtp.gmail.com"

@@ -118,6 +118,7 @@ class AIChatService(BaseService):
         conversation_id: uuid.UUID | None = None,
         department_id: uuid.UUID | None = None,
         user_role: str = "student",
+        document_ids: list[uuid.UUID] | None = None,
     ) -> ChatResponse:
         """Run one agentic turn and persist the exchange (§21).
 
@@ -129,6 +130,11 @@ class AIChatService(BaseService):
         """
         content = self._validate_not_blank(message, field="message")
         workflow = self._build_workflow()
+
+        user_doc_texts = await self._load_user_document_texts(
+            user_id=user_id,
+            document_ids=document_ids or [],
+        )
 
         if conversation_id is None:
             conversation = await self._conversations.create_conversation(
@@ -164,6 +170,7 @@ class AIChatService(BaseService):
             content=content,
             conversation=conversation,
             history=session_history,
+            user_doc_texts=user_doc_texts,
         )
 
         active_agent = state.current_agent
@@ -219,6 +226,41 @@ class AIChatService(BaseService):
             handoff=self._to_handoff(state.handoff),
             citations=citations,
         )
+
+    # -- user document context -----------------------------------------------
+
+    async def _load_user_document_texts(
+        self,
+        *,
+        user_id: uuid.UUID,
+        document_ids: list[uuid.UUID],
+    ) -> list[str]:
+        """Load extracted text from user-uploaded documents.
+
+        Verifies that each document belongs to the acting user and has
+        successfully extracted text. Returns a list of text strings in the
+        order the document IDs were provided. Non-existent, unauthorized,
+        or failed documents are silently skipped.
+        """
+        if not document_ids:
+            return []
+
+        from app.models import Document
+        from app.utils.file_storage import read_extracted_text
+
+        texts: list[str] = []
+        for doc_id in document_ids:
+            doc = await self._session.get(Document, doc_id)
+            if doc is None:
+                continue
+            if doc.user_id != user_id:
+                continue
+            if doc.extracted_text_path is None:
+                continue
+            text = read_extracted_text(doc.extracted_text_path)
+            if text:
+                texts.append(text)
+        return texts
 
     # -- workflow construction ------------------------------------------------
 
@@ -302,6 +344,7 @@ class AIChatService(BaseService):
         content: str,
         conversation: Any,
         history: list[Any],
+        user_doc_texts: list[str] | None = None,
     ) -> WorkflowState:
         """Build the typed state and run the compiled graph off the event loop."""
         from ai.core.state import (
@@ -324,6 +367,7 @@ class AIChatService(BaseService):
             ),
             current_agent=current_agent,
             message_history=history,
+            user_document_texts=user_doc_texts or [],
         )
         result = await asyncio.to_thread(workflow.invoke, state.model_dump())
         return WorkflowState.model_validate(result)

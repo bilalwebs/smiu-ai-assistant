@@ -18,6 +18,7 @@ from app.api.v1.endpoints import (
     ai,
     auth,
     conversations,
+    documents,
     health,
     knowledge,
     messages,
@@ -35,6 +36,7 @@ api_router.include_router(students.router)
 api_router.include_router(requests.router)
 api_router.include_router(notifications.router)
 api_router.include_router(conversations.router)
+api_router.include_router(documents.router)
 api_router.include_router(messages.router)
 api_router.include_router(knowledge.router)
 api_router.include_router(ai.router)

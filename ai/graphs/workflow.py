@@ -111,6 +111,7 @@ def _retrieve_with(
         query=state.user_query,
         message_history=state.message_history,
         user_context=state.user_context,
+        user_document_texts=state.user_document_texts,
     )
     return {"agent_output": output}
 

@@ -98,6 +98,7 @@ async def ask_ai(
         message=payload.message,
         conversation_id=payload.conversation_id,
         department_id=payload.department_id,
+        document_ids=payload.document_ids,
     )
     return success_response(request, result)
 

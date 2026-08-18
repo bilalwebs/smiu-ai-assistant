@@ -84,6 +84,7 @@ class ContextBuilder:
         message_history: Sequence[ChatTurn] = (),
         user_context: UserContext | None = None,
         system_rules: str = "",
+        user_document_texts: Sequence[str] = (),
     ) -> str:
         """Return the budgeted, labeled prompt context (§17.2)."""
         units: list[_Unit] = []
@@ -109,6 +110,17 @@ class ContextBuilder:
                     _PRIORITY_HISTORY,
                     len(units),
                     "history",
+                )
+            )
+
+        # User-uploaded document context (high priority, below evidence).
+        for index, doc_text in enumerate(user_document_texts, start=1):
+            units.append(
+                _Unit(
+                    self._user_document_block(doc_text, index),
+                    _PRIORITY_EVIDENCE,
+                    len(units),
+                    "evidence",
                 )
             )
 
@@ -201,6 +213,13 @@ class ContextBuilder:
             f"[Source {index}] {chunk.title} (category: {chunk.category}) "
             f"[chunk: {chunk.chunk_id}]\n"
             f"{chunk.snippet}"
+        )
+
+    def _user_document_block(self, text: str, index: int) -> str:
+        """Render user-uploaded document text as a labeled context block."""
+        return (
+            f"[User Document {index}]\n"
+            f"{text}"
         )
 
 

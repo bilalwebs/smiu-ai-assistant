@@ -172,6 +172,7 @@ class SpecialistAgent(ABC):
         evidence: Sequence[RetrievedChunk] = (),
         message_history: Sequence[ChatTurn] = (),
         user_context: UserContext | None = None,
+        user_document_texts: Sequence[str] = (),
     ) -> str:
         """Assemble the budgeted, labeled prompt context (§17.2)."""
         return self.context_builder.build(
@@ -179,6 +180,7 @@ class SpecialistAgent(ABC):
             evidence=evidence,
             message_history=message_history,
             user_context=user_context,
+            user_document_texts=user_document_texts,
         )
 
     def generate(
@@ -265,6 +267,7 @@ class SpecialistAgent(ABC):
         query: str,
         message_history: Sequence[ChatTurn] = (),
         user_context: UserContext | None = None,
+        user_document_texts: Sequence[str] = (),
     ) -> AgentOutput:
         """Execute the full specialist pass and return the agent output (§3.3).
 
@@ -295,6 +298,7 @@ class SpecialistAgent(ABC):
                 evidence=chunks,
                 message_history=message_history,
                 user_context=user_context,
+                user_document_texts=user_document_texts,
             )
             result = self.generate(query=query, context=context)
             output_decision = self.guardrails.check_output(result.answer)

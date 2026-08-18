@@ -26,6 +26,7 @@ from app.dependencies.database import get_db_session
 from app.repositories import (
     ChatMessageRepository,
     ConversationRepository,
+    DocumentRepository,
     FeedbackRepository,
     KnowledgeChunkRepository,
     KnowledgeDocumentRepository,
@@ -42,6 +43,7 @@ from app.services import (
     AuthService,
     ChatHistoryService,
     ConversationService,
+    DocumentService,
     FeedbackService,
     KnowledgeChunkService,
     KnowledgeDocumentService,
@@ -128,6 +130,11 @@ def get_feedback_service(db: Session) -> FeedbackService:
     return FeedbackService(db)
 
 
+def get_document_service(db: Session) -> DocumentService:
+    """Yield a request-scoped document service."""
+    return DocumentService(db)
+
+
 def get_audit_log_service(db: Session) -> AuditLogService:
     """Yield a request-scoped audit-log service."""
     return AuditLogService(db)
@@ -173,6 +180,11 @@ def get_knowledge_chunk_repository(db: Session) -> KnowledgeChunkRepository:
 def get_conversation_repository(db: Session) -> ConversationRepository:
     """Yield a request-scoped conversation repository."""
     return ConversationRepository(db)
+
+
+def get_document_repository(db: Session) -> DocumentRepository:
+    """Yield a request-scoped document repository."""
+    return DocumentRepository(db)
 
 
 def get_chat_message_repository(db: Session) -> ChatMessageRepository:
