@@ -3,5 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "description": "Next.js 15 frontend for the SMU AI Assistant platform",
-  "scripts": {}
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-markdown": "^9.1.0",
+    "remark-gfm": "^4.0.1",
+    "rehype-highlight": "^7.0.2",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.0",
+    "lucide-react": "^0.511.0",
+    "date-fns": "^4.1.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "^5.8.3",
+    "tailwindcss": "^4.1.7",
+    "@tailwindcss/postcss": "^4.1.7",
+    "postcss": "^8.5.4",
+    "eslint": "^9.27.0",
+    "eslint-config-next": "^15.3.1",
+    "@eslint/eslintrc": "^3.3.1"
+  }
 }
