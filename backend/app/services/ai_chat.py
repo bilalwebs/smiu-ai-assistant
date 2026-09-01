@@ -129,12 +129,13 @@ class AIChatService(BaseService):
             or did not produce a response.
         """
         content = self._validate_not_blank(message, field="message")
-        workflow = self._build_workflow()
 
         user_doc_texts = await self._load_user_document_texts(
             user_id=user_id,
             document_ids=document_ids or [],
         )
+
+        workflow = self._build_workflow()
 
         if conversation_id is None:
             conversation = await self._conversations.create_conversation(
@@ -161,6 +162,12 @@ class AIChatService(BaseService):
             role=MessageRole.USER,
             content=content,
             status=MessageStatus.COMPLETED,
+        )
+
+        await self._link_documents_to_message(
+            user_id=user_id,
+            document_ids=document_ids or [],
+            message_id=user_message.id,
         )
 
         state = await self._invoke_workflow(
@@ -261,6 +268,34 @@ class AIChatService(BaseService):
             if text:
                 texts.append(text)
         return texts
+
+    async def _link_documents_to_message(
+        self,
+        *,
+        user_id: uuid.UUID,
+        document_ids: list[uuid.UUID],
+        message_id: uuid.UUID,
+    ) -> None:
+        """Link owned documents to the user message after creation.
+
+        Sets ``message_id`` on each document so the existing
+        ``Document.message_id`` FK (→ ``chat_history.id``) creates the
+        indirect path Document → ChatMessage → AIConversation.
+        Non-existent or unauthorized documents are silently skipped.
+        """
+        if not document_ids:
+            return
+
+        from app.models import Document
+
+        for doc_id in document_ids:
+            doc = await self._session.get(Document, doc_id)
+            if doc is None:
+                continue
+            if doc.user_id != user_id:
+                continue
+            doc.message_id = message_id
+        await self._session.flush()
 
     # -- workflow construction ------------------------------------------------
 

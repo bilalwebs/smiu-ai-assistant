@@ -65,6 +65,19 @@ export default function ConversationChatPage({
     loadMessages();
   }, [conversationId]);
 
+  // Load existing attachments
+  useEffect(() => {
+    const loadAttachments = async () => {
+      try {
+        const docs = await api.documents.list(conversationId);
+        setAttachments(docs);
+      } catch {
+        // Silently ignore — attachments are optional context
+      }
+    };
+    loadAttachments();
+  }, [conversationId]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);

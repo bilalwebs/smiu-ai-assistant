@@ -221,11 +221,12 @@ async def list_attachments(
         conversation_id, current_user.user_id, conversations
     )
 
-    docs = await document_repo.list_by_user(current_user.user_id)
+    docs = await document_repo.list_by_conversation(conversation_id)
     reads = [
         DocumentRead(
             id=d.id,
             user_id=d.user_id,
+            conversation_id=conversation_id,
             category=d.category.value,
             original_filename=d.original_filename,
             content_type=d.content_type,

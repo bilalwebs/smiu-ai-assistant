@@ -1,11 +1,19 @@
 import type {
   ChatResponse,
   ConversationRead,
+  DepartmentRead,
   DocumentRead,
   DocumentUploadResponse,
   MessageRead,
+  NotificationRead,
+  PaginationMeta,
+  RequestCreate,
+  RequestRead,
+  StudentDashboardRead,
+  StudentRead,
   SuccessResponse,
   TokenResponse,
+  UnreadCountRead,
   UserRead,
 } from "@/types/api";
 
@@ -80,6 +88,50 @@ async function request<T>(
   return body.data;
 }
 
+async function requestPaginated<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<{ data: T; pagination: PaginationMeta | null }> {
+  const token = getToken();
+  const isFormData = options.body instanceof FormData;
+  const headers: Record<string, string> = {
+    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    const refreshed = await tryRefreshToken();
+    if (refreshed) {
+      headers["Authorization"] = `Bearer ${getToken()}`;
+      const retryRes = await fetch(`${API_URL}${path}`, { ...options, headers });
+      if (!retryRes.ok) {
+        const body = await retryRes.json().catch(() => ({}));
+        throw new ApiError(retryRes.status, body?.error?.message || body?.message || `Request failed (${retryRes.status})`);
+      }
+      const body = await retryRes.json() as SuccessResponse<T>;
+      return { data: body.data, pagination: body.pagination || null };
+    }
+    clearTokens();
+    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login";
+    }
+    throw new ApiError(401, "Session expired");
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, body?.error?.message || body?.message || `Request failed (${res.status})`);
+  }
+
+  const body = await res.json() as SuccessResponse<T>;
+  return { data: body.data, pagination: body.pagination || null };
+}
+
 async function tryRefreshToken(): Promise<boolean> {
   const refreshToken = localStorage.getItem("smiu_refresh_token");
   if (!refreshToken) return false;
@@ -135,6 +187,61 @@ export const api = {
     },
     getMe: async () => {
       return request<UserRead>("/users/me");
+    },
+    forgotPassword: async (email: string) => {
+      return request<{ message: string }>("/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+  },
+
+  departments: {
+    list: async () => {
+      return request<DepartmentRead[]>("/departments");
+    },
+  },
+
+  students: {
+    getMe: async () => {
+      return request<StudentRead>("/students/me");
+    },
+    getDashboard: async () => {
+      return request<StudentDashboardRead>("/students/me/dashboard");
+    },
+  },
+
+  requests: {
+    list: async (page = 1, limit = 20, status?: string) => {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (status) params.set("request_status", status);
+      return requestPaginated<RequestRead[]>(`/requests?${params.toString()}`);
+    },
+    create: async (payload: RequestCreate) => {
+      return request<RequestRead>("/requests", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    get: async (id: string) => {
+      return request<RequestRead>(`/requests/${id}`);
+    },
+  },
+
+  notifications: {
+    list: async (page = 1, limit = 20, read?: boolean) => {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (read !== undefined) params.set("read", String(read));
+      return requestPaginated<NotificationRead[]>(`/notifications?${params.toString()}`);
+    },
+    unreadCount: async () => {
+      return request<UnreadCountRead>("/notifications/unread-count");
+    },
+    markAllRead: async () => {
+      return request<{ marked: number }>("/notifications/read-all", { method: "POST" });
+    },
+    markRead: async (id: string) => {
+      return request<NotificationRead>(`/notifications/${id}/read`, { method: "POST" });
     },
   },
 

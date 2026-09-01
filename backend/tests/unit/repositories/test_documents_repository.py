@@ -54,3 +54,47 @@ async def test_lists_exclude_soft_deleted(
     await repo.soft_delete(gone)
     rows = await repo.list_by_request(req.id)
     assert [row.id for row in rows] == [live.id]
+
+
+async def test_list_by_conversation_returns_linked_docs(
+    db_session, document_factory, user_factory, conversation_factory, message_factory
+) -> None:
+    user = await user_factory()
+    conv = await conversation_factory(user_id=user.id)
+    msg = await message_factory(conversation_id=conv.id)
+    d1 = await document_factory(user_id=user.id, message_id=msg.id)
+    d2 = await document_factory(user_id=user.id, message_id=msg.id)
+    # Unlinked doc should not appear
+    await document_factory(user_id=user.id)
+    repo = DocumentRepository(db_session)
+    rows = await repo.list_by_conversation(conv.id)
+    assert {row.id for row in rows} == {d1.id, d2.id}
+
+
+async def test_list_by_conversation_excludes_other_conversations(
+    db_session, document_factory, user_factory, conversation_factory, message_factory
+) -> None:
+    user = await user_factory()
+    conv_a = await conversation_factory(user_id=user.id)
+    conv_b = await conversation_factory(user_id=user.id)
+    msg_a = await message_factory(conversation_id=conv_a.id)
+    msg_b = await message_factory(conversation_id=conv_b.id)
+    d_a = await document_factory(user_id=user.id, message_id=msg_a.id)
+    await document_factory(user_id=user.id, message_id=msg_b.id)
+    repo = DocumentRepository(db_session)
+    rows = await repo.list_by_conversation(conv_a.id)
+    assert [row.id for row in rows] == [d_a.id]
+
+
+async def test_list_by_conversation_excludes_soft_deleted(
+    db_session, document_factory, user_factory, conversation_factory, message_factory
+) -> None:
+    user = await user_factory()
+    conv = await conversation_factory(user_id=user.id)
+    msg = await message_factory(conversation_id=conv.id)
+    live = await document_factory(user_id=user.id, message_id=msg.id)
+    gone = await document_factory(user_id=user.id, message_id=msg.id)
+    repo = DocumentRepository(db_session)
+    await repo.soft_delete(gone)
+    rows = await repo.list_by_conversation(conv.id)
+    assert [row.id for row in rows] == [live.id]

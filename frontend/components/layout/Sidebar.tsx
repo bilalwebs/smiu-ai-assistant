@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -19,24 +19,31 @@ import {
 import { useAuthStore } from "@/lib/store";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Requests", href: "/dashboard/requests", icon: ClipboardList },
-  { label: "New Request", href: "/dashboard/requests/new", icon: PlusCircle },
-  { label: "Chat with AI", href: "/chat", icon: MessageSquare },
-  { label: "Conversation History", href: "/dashboard/history", icon: History },
-  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
-  { label: "Profile", href: "/dashboard/profile", icon: User },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, exact: true },
+  { label: "My Requests", href: "/dashboard/requests", icon: ClipboardList, exact: false },
+  { label: "New Request", href: "/dashboard/requests/new", icon: PlusCircle, exact: true },
+  { label: "Chat with AI", href: "/chat", icon: MessageSquare, exact: false },
+  { label: "Conversation History", href: "/dashboard/history", icon: History, exact: false },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell, exact: false },
+  { label: "Profile", href: "/dashboard/profile", icon: User, exact: false },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings, exact: false },
 ] as const;
 
 interface SidebarProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  onNavigate?: () => void;
 }
 
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle, onNavigate }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <aside
@@ -76,13 +83,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin">
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/chat" && item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={onNavigate}
                   className={cn(
                     "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                     isActive
@@ -129,7 +137,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       >
         {collapsed ? (
           <button
-            onClick={() => logout()}
+            onClick={handleLogout}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-muted hover:text-danger"
             aria-label="Sign out"
           >
@@ -151,7 +159,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               </div>
             </div>
             <button
-              onClick={() => logout()}
+              onClick={handleLogout}
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-muted hover:text-danger"
               aria-label="Sign out"
             >

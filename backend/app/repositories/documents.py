@@ -56,24 +56,35 @@ class DocumentRepository(BaseRepository[Document]):
 
     async def list_by_conversation(
         self,
-        user_id: uuid.UUID,
+        conversation_id: uuid.UUID,
         *,
         options: Sequence[ExecutableOption] = (),
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[Document]:
-        """List a user's documents linked via their chat messages in any conversation.
+        """List documents linked to a conversation via chat messages.
 
-        Documents are associated with users directly (user_id). This lists all
-        documents owned by a user, scoped to their user_id.
+        Joins through ``chat_history`` on ``Document.message_id`` to filter
+        documents whose linked message belongs to the given conversation.
         """
-        return await self.list(
-            Document.user_id == user_id,
-            order_by=[Document.created_at.desc()],
-            options=options,
-            limit=limit,
-            offset=offset,
+        from sqlalchemy import select
+        from app.models import ChatMessage
+
+        stmt = (
+            select(Document)
+            .join(ChatMessage, Document.message_id == ChatMessage.id)
+            .where(
+                ChatMessage.conversation_id == conversation_id,
+                Document.deleted_at.is_(None),
+            )
+            .order_by(Document.created_at.desc())
         )
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        if offset is not None:
+            stmt = stmt.offset(offset)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
 
 
 __all__ = ["DocumentRepository"]

@@ -32,7 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onToggle={() => setMobileMenuOpen(false)} />
+        <Sidebar onToggle={() => setMobileMenuOpen(false)} onNavigate={() => setMobileMenuOpen(false)} />
       </div>
 
       {/* Main content */}

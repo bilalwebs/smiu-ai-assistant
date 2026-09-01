@@ -162,12 +162,20 @@ class AuthService(BaseService):
                 program_name=program_name,
             )
 
-        token = create_email_verification_token(
-            subject=str(user.id), settings=self._settings
-        )
-        await self._email.send_verification_email(
-            email=email, full_name=full_name, token=token
-        )
+        if self._settings.smtp_enabled:
+            token = create_email_verification_token(
+                subject=str(user.id), settings=self._settings
+            )
+            await self._email.send_verification_email(
+                email=email, full_name=full_name, token=token
+            )
+        else:
+            from app.models.users import UserStatus as US
+            from datetime import UTC, datetime
+
+            user = await self._users.update(
+                user, email_verified_at=datetime.now(UTC), status=US.ACTIVE
+            )
         await self._audit.create_log(
             action="register",
             resource_type="user",
