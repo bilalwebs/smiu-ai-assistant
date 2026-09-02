@@ -87,6 +87,9 @@ export default function ChatPage() {
       if (!conversationId) {
         setConversationId(response.conversation_id);
         window.history.replaceState(null, "", `/chat/${response.conversation_id}`);
+        // Auto-generate title from first message
+        const title = message.length > 60 ? message.slice(0, 60) + "..." : message;
+        api.conversations.update(response.conversation_id, { title }).catch(() => {});
       }
 
       const assistantMessage = {
@@ -167,6 +170,7 @@ export default function ChatPage() {
                 agentKey={msg.agentKey}
                 citations={msg.citations}
                 timestamp={msg.timestamp}
+                messageId={msg.id}
               />
             ))}
 

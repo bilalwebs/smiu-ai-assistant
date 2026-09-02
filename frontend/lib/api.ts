@@ -252,6 +252,11 @@ export const api = {
     get: async (id: string) => {
       return request<RequestRead>(`/requests/${id}`);
     },
+    submit: async (id: string) => {
+      return request<RequestRead>(`/requests/${id}/submit`, {
+        method: "POST",
+      });
+    },
   },
 
   notifications: {
@@ -285,6 +290,22 @@ export const api = {
     },
     getSources: async (messageId: string) => {
       return request<import("@/types/api").ChatCitationRead[]>(`/ai/sources/${messageId}`);
+    },
+    feedback: async (
+      sentiment: "positive" | "negative",
+      comment?: string,
+      messageId?: string,
+      conversationId?: string
+    ) => {
+      return request<import("@/types/api").FeedbackRead>("/ai/feedback", {
+        method: "POST",
+        body: JSON.stringify({
+          message_id: messageId || null,
+          conversation_id: conversationId || null,
+          sentiment,
+          comment: comment || null,
+        }),
+      });
     },
   },
 

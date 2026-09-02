@@ -99,6 +99,19 @@ export interface ChatCitationRead {
   knowledge_chunk_id: string | null;
 }
 
+export interface FeedbackRead {
+  id: string;
+  user_id: string;
+  message_id: string | null;
+  conversation_id: string | null;
+  feedback_type: string;
+  rating: number | null;
+  comment: string | null;
+  sentiment: string | null;
+  status: string;
+  created_at: string;
+}
+
 export interface PaginationMeta {
   page: number;
   limit: number;

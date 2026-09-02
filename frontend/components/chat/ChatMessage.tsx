@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, ChevronDown, ChevronUp, Bot, User } from "lucide-react";
+import { Copy, Check, ChevronDown, ChevronUp, Bot, User, ThumbsUp, ThumbsDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChatCitationRead } from "@/types/api";
 import { format } from "date-fns";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessageProps {
   role: "user" | "assistant" | "system";
@@ -13,6 +15,7 @@ interface ChatMessageProps {
   citations?: ChatCitationRead[];
   timestamp?: string;
   status?: string;
+  messageId?: string;
 }
 
 export default function ChatMessage({
@@ -22,9 +25,12 @@ export default function ChatMessage({
   citations = [],
   timestamp,
   status,
+  messageId,
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
   const [showSources, setShowSources] = useState(false);
+  const [feedback, setFeedback] = useState<"positive" | "negative" | null>(null);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   const isUser = role === "user";
 
@@ -32,6 +38,20 @@ export default function ChatMessage({
     await navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFeedback = async (sentiment: "positive" | "negative") => {
+    if (feedbackLoading || feedback === sentiment) return;
+    setFeedbackLoading(true);
+    try {
+      const { api } = await import("@/lib/api");
+      await api.chat.feedback(sentiment, undefined, messageId);
+      setFeedback(sentiment);
+    } catch {
+      // silently ignore
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   return (
@@ -73,7 +93,13 @@ export default function ChatMessage({
               : "border border-border bg-surface text-text-primary shadow-sm"
           )}
         >
-          <div className="whitespace-pre-wrap break-words">{content}</div>
+          {isUser ? (
+            <div className="whitespace-pre-wrap break-words">{content}</div>
+          ) : (
+            <div className="prose prose-sm max-w-none break-words prose-headings:font-semibold prose-headings:text-text-primary prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0 prose-code:rounded bg-muted px-1.5 py-0.5 text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-muted prose-pre:border prose-pre:border-border">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            </div>
+          )}
         </div>
 
         {/* Actions row */}
@@ -96,6 +122,34 @@ export default function ChatMessage({
                 ) : (
                   <Copy className="h-3.5 w-3.5" />
                 )}
+              </button>
+
+              <button
+                onClick={() => handleFeedback("positive")}
+                disabled={feedbackLoading}
+                className={cn(
+                  "flex h-6 w-6 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100",
+                  feedback === "positive"
+                    ? "text-success"
+                    : "text-text-muted hover:text-success"
+                )}
+                aria-label="Helpful"
+              >
+                <ThumbsUp className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                onClick={() => handleFeedback("negative")}
+                disabled={feedbackLoading}
+                className={cn(
+                  "flex h-6 w-6 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100",
+                  feedback === "negative"
+                    ? "text-danger"
+                    : "text-text-muted hover:text-danger"
+                )}
+                aria-label="Not helpful"
+              >
+                <ThumbsDown className="h-3.5 w-3.5" />
               </button>
 
               {citations.length > 0 && (

@@ -13,6 +13,7 @@ import {
   Eye,
   Loader2,
   FileText,
+  Send,
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -62,6 +63,7 @@ export default function MyRequestsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
 
   useEffect(() => {
     api.departments.list().then(setDepartments).catch(() => {});
@@ -101,6 +103,18 @@ export default function MyRequestsPage() {
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  const handleSubmit = async (id: string) => {
+    setSubmittingId(id);
+    try {
+      await api.requests.submit(id);
+      fetchRequests();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit request.");
+    } finally {
+      setSubmittingId(null);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -236,13 +250,29 @@ export default function MyRequestsPage() {
                       {formatDate(req.created_at)}
                     </td>
                     <td className="px-5 py-3">
-                      <Link
-                        href={`/dashboard/requests/${req.id}`}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-muted hover:text-primary"
-                        title="View details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Link>
+                      <div className="flex items-center gap-1">
+                        {req.status === "draft" && (
+                          <button
+                            onClick={() => handleSubmit(req.id)}
+                            disabled={submittingId === req.id}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-success/10 hover:text-success disabled:opacity-50"
+                            title="Submit request"
+                          >
+                            {submittingId === req.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                        <Link
+                          href={`/dashboard/requests/${req.id}`}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-muted hover:text-primary"
+                          title="View details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

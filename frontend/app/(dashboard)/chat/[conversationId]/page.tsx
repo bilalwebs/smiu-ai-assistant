@@ -42,16 +42,27 @@ export default function ConversationChatPage({
     const loadMessages = async () => {
       try {
         const history = await api.messages.list(conversationId);
-        setMessages(
-          history.map((msg) => ({
-            id: msg.id,
-            role: msg.role as "user" | "assistant",
-            content: msg.content,
-            agentKey: msg.agent_key,
-            citations: [],
-            timestamp: msg.created_at,
-          }))
+        const messagesWithCitations = await Promise.all(
+          history.map(async (msg) => {
+            let citations: ChatCitationRead[] = [];
+            if (msg.role === "assistant") {
+              try {
+                citations = await api.chat.getSources(msg.id);
+              } catch {
+                // sources may not exist yet
+              }
+            }
+            return {
+              id: msg.id,
+              role: msg.role as "user" | "assistant",
+              content: msg.content,
+              agentKey: msg.agent_key,
+              citations,
+              timestamp: msg.created_at,
+            };
+          })
         );
+        setMessages(messagesWithCitations);
       } catch (err) {
         setError(
           err instanceof Error
@@ -216,6 +227,7 @@ export default function ConversationChatPage({
               agentKey={msg.agentKey}
               citations={msg.citations}
               timestamp={msg.timestamp}
+              messageId={msg.id}
             />
           ))}
 
