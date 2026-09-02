@@ -88,6 +88,24 @@ async function request<T>(
   return body.data;
 }
 
+interface RawSuccessResponse<T> {
+  success: boolean;
+  data: T;
+  meta?: {
+    request_id?: string;
+    timestamp?: string;
+    pagination?: {
+      page: number;
+      limit: number;
+      offset: number;
+      total: number;
+      total_pages: number;
+      next_page: number | null;
+      prev_page: number | null;
+    };
+  };
+}
+
 async function requestPaginated<T>(
   path: string,
   options: RequestInit = {}
@@ -113,8 +131,12 @@ async function requestPaginated<T>(
         const body = await retryRes.json().catch(() => ({}));
         throw new ApiError(retryRes.status, body?.error?.message || body?.message || `Request failed (${retryRes.status})`);
       }
-      const body = await retryRes.json() as SuccessResponse<T>;
-      return { data: body.data, pagination: body.pagination || null };
+      const body = await retryRes.json() as RawSuccessResponse<T>;
+      const raw = body.meta?.pagination;
+      const pagination: PaginationMeta | null = raw
+        ? { page: raw.page, limit: raw.limit, total: raw.total, total_pages: raw.total_pages }
+        : null;
+      return { data: body.data, pagination };
     }
     clearTokens();
     if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
@@ -128,8 +150,12 @@ async function requestPaginated<T>(
     throw new ApiError(res.status, body?.error?.message || body?.message || `Request failed (${res.status})`);
   }
 
-  const body = await res.json() as SuccessResponse<T>;
-  return { data: body.data, pagination: body.pagination || null };
+  const body = await res.json() as RawSuccessResponse<T>;
+  const raw = body.meta?.pagination;
+  const pagination: PaginationMeta | null = raw
+    ? { page: raw.page, limit: raw.limit, total: raw.total, total_pages: raw.total_pages }
+    : null;
+  return { data: body.data, pagination };
 }
 
 async function tryRefreshToken(): Promise<boolean> {

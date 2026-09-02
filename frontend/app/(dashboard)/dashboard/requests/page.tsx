@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import type { RequestRead, PaginationMeta } from "@/types/api";
+import type { RequestRead, PaginationMeta, DepartmentRead } from "@/types/api";
 import {
   Search,
   PlusCircle,
@@ -55,12 +55,25 @@ function formatDate(dateStr: string) {
 
 export default function MyRequestsPage() {
   const [requests, setRequests] = useState<RequestRead[]>([]);
+  const [departments, setDepartments] = useState<DepartmentRead[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    api.departments.list().then(setDepartments).catch(() => {});
+  }, []);
+
+  const deptMap = useCallback(
+    (id: string | null) => {
+      if (!id) return "—";
+      return departments.find((d) => d.id === id)?.name || "—";
+    },
+    [departments]
+  );
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -207,7 +220,7 @@ export default function MyRequestsPage() {
                       <p className="text-xs text-text-muted">{req.request_no}</p>
                     </td>
                     <td className="hidden px-5 py-3 text-text-secondary sm:table-cell">
-                      {req.department_id ? req.department_id.slice(0, 8) + "..." : "—"}
+                      {deptMap(req.department_id)}
                     </td>
                     <td className="hidden px-5 py-3 md:table-cell">
                       <span className={`text-xs font-medium capitalize ${PRIORITY_COLORS[req.priority] || ""}`}>
@@ -223,12 +236,13 @@ export default function MyRequestsPage() {
                       {formatDate(req.created_at)}
                     </td>
                     <td className="px-5 py-3">
-                      <button
+                      <Link
+                        href={`/dashboard/requests/${req.id}`}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-muted hover:text-primary"
                         title="View details"
                       >
                         <Eye className="h-4 w-4" />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -241,8 +255,8 @@ export default function MyRequestsPage() {
             <div className="flex items-center justify-between">
               <p className="text-sm text-text-secondary">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to{" "}
-                {Math.min(pagination.page * pagination.limit, pagination.total_items)} of{" "}
-                {pagination.total_items} requests
+                {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+                {pagination.total} requests
               </p>
               <div className="flex items-center gap-2">
                 <button

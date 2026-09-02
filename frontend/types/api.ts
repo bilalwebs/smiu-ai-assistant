@@ -102,7 +102,7 @@ export interface ChatCitationRead {
 export interface PaginationMeta {
   page: number;
   limit: number;
-  total_items: number;
+  total: number;
   total_pages: number;
 }
 
@@ -110,7 +110,6 @@ export interface SuccessResponse<T> {
   success: boolean;
   data: T;
   message?: string;
-  pagination?: PaginationMeta;
 }
 
 export interface DepartmentRead {
